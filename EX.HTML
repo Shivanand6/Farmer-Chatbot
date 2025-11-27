@@ -1,0 +1,683 @@
+
+You said:
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Krishi Connect | Empowering Farmers 🌾</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<!-- Leaflet CSS (for the interactive map) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-sA+e2H6kHf6O1gkz6k+2k2q6Zq1o4o9gk7yXg1yW0+8="
+  crossorigin=""/>
+
+<style>
+/* -------------------------
+   Theme variables & global styles
+   ------------------------- */
+:root{
+  --bg:#ffffff; --text:#2a2a2a; --muted:#555;
+  --card-bg:rgba(255,255,255,0.92); --accent:#3b5a20;
+  --accent-grad: linear-gradient(45deg,#f9d976,#f39c12,#77dd77);
+  --shadow: rgba(0,0,0,0.08);
+  --farm-overlay: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=60');
+}
+[data-theme="dark"]{
+  --bg:#0f1720; --text:#e6f0dc; --muted:#bfcfc0;
+  --card-bg:rgba(6,12,8,0.72); --accent:#9ad58b;
+  --accent-grad: linear-gradient(45deg,#3b7a2d,#b47d14,#77dd77);
+  --shadow: rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+a{text-decoration:none;color:inherit;font-weight:600;}
+
+/* Topbar & navbar */
+.topbar{position:fixed;top:0;left:0;right:0;background:transparent;z-index:1000;padding:12px 0;display:flex;justify-content:center;box-shadow:0 2px 12px var(--shadow);}
+nav.nav{display:flex;gap:12px;align-items:center;font-weight:600;font-size:15px;}
+nav.nav a{padding:8px 14px;border-radius:20px;background:rgba(255,255,255,0.78);color:var(--accent);transition:all .25s ease;box-shadow:0 4px 12px rgba(0,0,0,0.06);}
+nav.nav a:hover,nav.nav a.active{background:var(--accent-grad);color:#fff;transform:scale(1.05);box-shadow:0 8px 20px rgba(0,0,0,0.12);}
+
+/* theme toggle in navbar left */
+.theme-toggle{margin-right:auto;margin-left:8px;display:flex;align-items:center;gap:6px;}
+.theme-toggle button{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 10px;border-radius:10px;cursor:pointer;font-weight:700;color:var(--accent);}
+
+/* hero */
+.hero{min-height:48vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:80px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:56px;font-weight:700;}
+.hero-title .krishi{color:orange;}
+.hero-title .connect{color:green;}
+.hero-sub{font-size:20px;font-weight:500;margin-top:6px;color:var(--muted);}
+
+/* main container & sections */
+main.container{max-width:1100px;margin:80px auto 100px auto;padding:0 16px;}
+section.block{opacity:0;transform:translateY(28px);transition:all .6s ease-out;margin-bottom:52px;padding:20px;border-radius:18px;background:linear-gradient(135deg,#fef9c3,#fcd34d,#bbf7d0);box-shadow:0 12px 32px var(--shadow);}
+section.block.visible{opacity:1;transform:translateY(0);}
+.card{background:var(--card-bg);border-radius:16px;padding:18px;box-shadow:0 10px 28px var(--shadow);transition:transform .25s,box-shadow .25s;}
+.card:hover{transform:translateY(-6px);box-shadow:0 18px 48px rgba(0,0,0,0.12);}
+
+/* small elements */
+.section-title{font-size:20px;font-weight:700;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.muted{color:var(--muted);font-size:13px;margin-bottom:8px;}
+ul{list-style:none;padding:0;margin:0;}
+li.item{background:#fefefe;padding:10px;margin-bottom:10px;border-left:6px solid var(--accent);border-radius:10px;display:flex;justify-content:space-between;align-items:center;transition:background .2s, transform .2s;}
+li.item:hover{background:#eef3e4;transform:translateX(4px);}
+.refresh-btn{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;transition:background .2s;}
+.refresh-btn:hover{background:#2f4a1a;}
+input,select{padding:10px;border:1px solid #bbb;border-radius:8px;font-size:14px;flex:1;}
+#preview{max-width:100%;display:none;border-radius:10px;margin-top:10px;box-shadow:0 8px 28px rgba(0,0,0,0.12);}
+
+/* modal for news only - farm themed transparent overlay */
+.modal-backdrop{
+  position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:2000;padding:18px;
+  background:rgba(12,20,8,0.28);backdrop-filter: blur(4px) saturate(120%);
+}
+.modal-backdrop::before{
+  content:'';position:absolute;inset:0;background:var(--farm-overlay);background-size:cover;background-position:center;opacity:0.16;filter:blur(2px) grayscale(0.05);z-index:0;
+}
+.modal-card{width:100%;max-width:980px;background:linear-gradient(180deg, rgba(59,122,45,0.95), rgba(249,217,118,0.98));color:#07280a;border-radius:12px;box-shadow:0 28px 60px rgba(0,0,0,0.26);overflow:hidden;border:1px solid rgba(255,255,255,0.06);position:relative;z-index:1;}
+.modal-header{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(0,0,0,0.06);}
+.modal-title{font-weight:800;color:#08310a;font-size:18px;}
+.modal-close{margin-left:auto;background:#08310a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+.modal-body{padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98)); color:var(--text);}
+.modal-note{font-size:13px;color:var(--muted);margin-top:8px;}
+.error-box{background:#fff6f0;border:1px solid #ffd7bf;padding:10px;border-radius:8px;color:#8b2b00;margin-top:8px;}
+.small-muted{font-size:12px;color:var(--muted);margin-top:6px;}
+
+/* map styling embedded in page (medium height) */
+#embeddedMap{height:400px;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.12);border:1px solid #eee;margin-top:12px;}
+.apmc-list{margin-top:12px;}
+
+/* iframe styling for news (inside modal) */
+#newsIframe{width:100%;height:520px;border:0;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.12);}
+
+/* footer */
+footer{background:linear-gradient(90deg,#fef9c3,#fcd34d);padding:28px 16px;text-align:center;border-top-left-radius:16px;border-top-right-radius:16px;}
+footer .footer-text{font-size:14px;color:#444;}
+
+/* df-messenger defaults */
+df-messenger{ --df-messenger-bot-message: linear-gradient(135deg,#77dd77,#fcd34d); --df-messenger-button-titlebar-color:#3b5a20;}
+
+/* responsive */
+@media(max-width:900px){ .hero-title{font-size:44px;} }
+@media(max-width:480px){ nav.nav{gap:6px;font-size:13px;} .hero-title{font-size:28px;} .hero-sub{font-size:14px;} }
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Topbar / Navbar with theme toggle on left -->
+<div class="topbar">
+  <nav class="nav" id="mainNav">
+    <div class="theme-toggle" aria-hidden="true">
+      <button id="navThemeToggle" title="Toggle dark / light">🌙 / ☀️</button>
+    </div>
+    <a href="#home" class="active">Home</a>
+    <a href="#news">News</a>
+    <a href="#market">Market</a>
+    <a href="#weather">Weather</a>
+    <a href="#apmc">APMC</a>
+    <a href="#fert-soil">Fertilizer</a>
+    <a href="#advisory">Advisory</a>
+    <a href="#disease">Disease</a>
+    <a href="#helpline">Helpline</a>
+  </nav>
+</div>
+
+<header class="hero" id="home">
+  <h1 class="hero-title">🌾 <span class="krishi">KRISHI</span> <span class="connect">CONNECT</span></h1>
+  <p class="hero-sub">Empowering farmers with real-time insights & guidance 🌱🚜</p>
+</header>
+
+<main class="container">
+
+  <!-- News section -->
+  <section id="news" class="block">
+    <div class="card">
+      <div style="display:flex; align-items:center;">
+        <div class="section-title">📰 Latest Agriculture News</div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="refresh-btn" id="fetchNewsBtn">Fetch Latest Farm News</button>
+          <button class="refresh-btn" id="openNewsSiteBtn">More Agri News</button>
+        </div>
+      </div>
+      <p class="muted">Top headlines from agriculture feeds (click to open source)</p>
+      <ul id="news-list"><li class="item">Loading news...</li></ul>
+    </div>
+  </section>
+
+  <!-- Market section -->
+  <section id="market" class="block">
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="section-title">📈 Market / Mandi Rates</div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="refresh-btn" onclick="loadMarketRates()">Refresh</button>
+          <!-- Removed Market modal: open official site in new tab -->
+          <button class="refresh-btn" id="openMarketSiteBtn">Open Agmarknet</button>
+        </div>
+      </div>
+      <p class="muted">Real-time commodity prices (static fallback shown here). Use "Open Agmarknet" to visit official site.</p>
+      <ul id="market-list"><li class="item">Loading market data...</li></ul>
+    </div>
+  </section>
+
+  <!-- Weather -->
+  <section id="weather" class="block">
+    <div class="card">
+      <div class="section-title">🌤️ Weather</div>
+      <p class="muted">Check by city</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        <input id="cityInput" placeholder="Enter city (e.g. Delhi)">
+        <button class="refresh-btn" onclick="loadWeather()">Check</button>
+      </div>
+      <ul id="weather-list"><li class="item">Loading weather...</li></ul>
+    </div>
+  </section>
+
+  <!-- APMC Map (embedded directly in page, medium height) -->
+  <section id="apmc" class="block">
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="section-title">🗺️ Nearby APMC Map</div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+          <button class="refresh-btn" id="embeddedLocateBtn">Refresh My Location</button>
+          <input id="embeddedCity" placeholder="Enter city (e.g. Gadag)" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+          <button class="refresh-btn" id="embeddedCityBtn">Enter City</button>
+        </div>
+      </div>
+      <p class="muted">Map shows nearby APMCs/markets based on your location or entered city. Uses OpenStreetMap and Overpass.</p>
+
+      <!-- embedded map element -->
+      <div id="embeddedMap" aria-label="APMC map"></div>
+
+      <div id="apmcResult" style="margin-top:10px;font-weight:700;color:var(--text);"></div>
+      <div id="apmcList" class="apmc-list"></div>
+    </div>
+  </section>
+
+  <!-- Fertilizer -->
+  <section id="fert-soil" class="block">
+    <div class="card">
+      <div class="section-title">🌱 Fertilizer & Soil Advice</div>
+      <p class="muted">Get dosage & soil test reminders</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="farmSize2" placeholder="Area (acres)">
+        <select id="cropType2">
+          <option value="rice">Rice</option>
+          <option value="wheat">Wheat</option>
+          <option value="maize">Maize</option>
+          <option value="cotton">Cotton</option>
+        </select>
+      </div>
+      <button class="refresh-btn" style="margin-top:10px;" onclick="calcFertilizerSoil()">Calculate</button>
+      <div id="fertSoilOut" style="margin-top:8px; font-weight:700; color:#3b5a20;"></div>
+    </div>
+  </section>
+
+  <!-- Advisory -->
+  <section id="advisory" class="block">
+    <div class="card">
+      <div class="section-title">🌾 Advisory Tips</div>
+      <ul>
+        <li class="item"><a href="https://farmer.gov.in/know-your-crop" target="_blank">💧 Deep watering helps root penetration</a></li>
+        <li class="item"><a href="https://farmer.gov.in/soil-management" target="_blank">🌿 Add compost & organic matter each season</a></li>
+        <li class="item"><a href="https://farmer.gov.in/machinery" target="_blank">🚜 Use simple mechanization to save labor</a></li>
+        <li class="item"><a href="https://farmer.gov.in/subsidy-schemes" target="_blank">⚡ Track subsidy schemes regularly</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Disease -->
+  <section id="disease" class="block">
+    <div class="card">
+      <div class="section-title">🦠 Leaf Disease Demo</div>
+      <p class="muted">Upload image to simulate detection</p>
+      <input id="imageUpload" type="file" accept="image/*">
+      <img id="preview" alt="preview">
+      <p id="prediction" style="margin-top:10px; font-weight:700; color:#3b5a20;">Prediction will appear here...</p>
+      <button class="refresh-btn" style="margin-top:8px;" onclick="tryDemoPredict()">Demo Predict</button>
+    </div>
+  </section>
+
+  <!-- Helpline -->
+  <section id="helpline" class="block">
+    <div class="card">
+      <div class="section-title">📞 Farmer Helpline</div>
+      <ul>
+        <li class="item"><a href="tel:18001801551">📱 Kisan Call Center: 1800-180-1551</a></li>
+        <li class="item"><a href="mailto:kisanhelp@nic.in">📧 Email: kisanhelp@nic.in</a></li>
+        <li class="item"><a href="https://farmer.gov.in" target="_blank">🌐 Social / Portal: farmer.gov.in</a></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer><div class="footer-text">© 2025 Krishi Connect | Grounded in Earth, Growing Forward</div></footer>
+
+<!-- News modal (kept as farm-themed popup only for "More Agri News") -->
+<div class="modal-backdrop" id="newsSiteModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+    <div class="modal-header">
+      <div class="modal-title" id="newsTitle">More Agri News — AgriculturePost</div>
+      <button class="modal-close" id="closeNewsSiteBtn">Close</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="newsIframe" src="https://www.agriculturepost.com/"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Dialogflow messenger (chatbot) -->
+<script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+<script>
+  // small embedded SVG icon to ensure chat icon shows
+  const CHAT_ICON = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="18" r="10" fill="#77dd77"/><rect x="12" y="32" width="40" height="18" rx="3" fill="#f9d976"/></svg>
+  );
+  setTimeout(()=>{ try{ const df=document.querySelector('df-messenger'); if(df) df.setAttribute('chat-icon', CHAT_ICON); }catch(e){} }, 200);
+</script>
+
+<df-messenger
+  intent="WELCOME"
+  chat-title="FarmersChatbot"
+  agent-id="18cd52aa-009b-4144-8af4-485bbec6dd81"
+  language-code="en"
+  style="--df-messenger-bot-message: linear-gradient(135deg,#77dd77 0%, #66b032 50%, #2f8a2a 100%); --df-messenger-button-titlebar-color:#2f4a1a;"
+></df-messenger>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-OcZb1k+8p6qDCoVjHfGJ8aT2w5Q1hq1KJfJ3u1gF0k8="
+  crossorigin=""></script>
+
+<script>
+/* =========================
+   Helper utilities & initialization
+   ========================= */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+/* Fade-in sections */
+const blocks = document.querySelectorAll('section.block');
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.18});
+blocks.forEach(b=>io.observe(b));
+
+/* Smooth nav */
+document.querySelectorAll('nav.nav a').forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    document.querySelectorAll('nav.nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    const id=a.getAttribute('href').substring(1);
+    const el=document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+/* Theme toggle */
+const themeBtn = document.getElementById('navThemeToggle');
+function applyTheme(theme){ document.body.setAttribute('data-theme', theme); try{ localStorage.setItem('krishi_theme', theme); }catch(e){} }
+const savedTheme = (function(){ try{ return localStorage.getItem('krishi_theme'); }catch(e){ return null; } })();
+applyTheme(savedTheme || 'light');
+themeBtn.addEventListener('click', ()=>{ const cur = document.body.getAttribute('data-theme') || 'light'; applyTheme(cur === 'light' ? 'dark' : 'light'); });
+
+/* =========================
+   News (RSS feeds via AllOrigins) - clickable links
+   ========================= */
+const rssFeeds = [
+  'https://www.agriculture.com/feed',
+  'https://www.farmprogress.com/feed',
+  'https://agriculturepost.com/feed'
+];
+
+async function fetchRssViaAllOrigins(url){
+  // allorigins raw endpoint (CORS proxy)
+  const proxy = 'https://api.allorigins.win/raw?url=';
+  const res = await fetch(proxy + encodeURIComponent(url));
+  if(!res.ok) throw new Error('RSS fetch failed ' + res.status);
+  return res.text();
+}
+
+function parseRssXml(xmlString){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlString, 'application/xml');
+  const items = Array.from(doc.querySelectorAll('item')).map(it=>{
+    return {
+      title: it.querySelector('title') ? it.querySelector('title').textContent : 'Untitled',
+      link: it.querySelector('link') ? it.querySelector('link').textContent : (it.querySelector('guid') ? it.querySelector('guid').textContent : '#'),
+      pubDate: it.querySelector('pubDate') ? new Date(it.querySelector('pubDate').textContent) : null
+    };
+  });
+  return items;
+}
+
+async function fetchLatestNews(){
+  const listEl = document.getElementById('news-list');
+  listEl.innerHTML = '<li class="item">Loading latest farm news...</li>';
+  let collected = [];
+  for(const feed of rssFeeds){
+    try{
+      const xml = await fetchRssViaAllOrigins(feed);
+      const items = parseRssXml(xml);
+      collected = collected.concat(items);
+    }catch(e){
+      console.warn('RSS fetch failed for', feed, e);
+    }
+  }
+  collected = collected.filter(i=>i.link).sort((a,b)=> (b.pubDate ? b.pubDate.getTime() : 0) - (a.pubDate ? a.pubDate.getTime() : 0)).slice(0,5);
+  if(!collected || collected.length===0){
+    const fallback = [
+      {title:'State expands mandi support schemes', link:'https://www.agriculture.com/'},
+      {title:'Soil health clinics reach rural districts', link:'https://www.farmprogress.com/'},
+      {title:'Affordable irrigation tech reaches villages', link:'https://www.agriculturepost.com/'}
+    ];
+    listEl.innerHTML = '';
+    fallback.forEach(f=>{
+      const li = document.createElement('li'); li.className='item';
+      li.innerHTML = <a href="${f.link}" target="_blank" rel="noopener">${escapeHtml(f.title)} →</a>;
+      listEl.appendChild(li);
+    });
+    return;
+  }
+  listEl.innerHTML = '';
+  collected.forEach(it=>{
+    const li = document.createElement('li'); li.className='item';
+    li.innerHTML = <a href="${it.link}" target="_blank" rel="noopener">${escapeHtml(it.title)} ${it.pubDate?'<small style="color:#666">— '+it.pubDate.toDateString()+'</small>':''} →</a>;
+    listEl.appendChild(li);
+  });
+}
+
+// news buttons wiring
+document.getElementById('fetchNewsBtn').addEventListener('click', fetchLatestNews);
+document.getElementById('openNewsSiteBtn').addEventListener('click', ()=>{ document.getElementById('newsSiteModal').style.display='flex'; });
+document.getElementById('closeNewsSiteBtn').addEventListener('click', ()=>{ document.getElementById('newsSiteModal').style.display='none'; });
+
+/* =========================
+   Market rates (static shown on page). Open Agmarknet in new tab.
+   ========================= */
+function loadMarketRates(){
+  const list=document.getElementById('market-list');
+  const fallback=[
+    {commodity:'Wheat',market:'Delhi',state:'Delhi',modal_price:2300},
+    {commodity:'Rice',market:'Bangalore',state:'Karnataka',modal_price:2800},
+    {commodity:'Maize',market:'Pune',state:'Maharashtra',modal_price:1950},
+    {commodity:'Cotton',market:'Gujarat',state:'Gujarat',modal_price:4200},
+    {commodity:'Tomato',market:'Hyderabad',state:'Telangana',modal_price:2200}
+  ];
+  list.innerHTML = '';
+  fallback.forEach(r=>{
+    const li=document.createElement('li'); li.className='item';
+    li.innerHTML = <strong>${r.commodity}</strong> (${r.market}, ${r.state}) — ₹${r.modal_price}/quintal;
+    list.appendChild(li);
+  });
+}
+
+// Open Agmarknet externally (no iframe)
+document.getElementById('openMarketSiteBtn').addEventListener('click', ()=>{ window.open('https://agmarknet.gov.in/','_blank'); });
+
+/* =========================
+   Weather (Nominatim + Open-Meteo)
+   ========================= */
+async function loadWeather(){
+  const city = document.getElementById('cityInput').value.trim();
+  const listEl = document.getElementById('weather-list');
+  if(!city){ alert('Enter city'); return; }
+  listEl.innerHTML = '<li class="item">Loading weather...</li>';
+  try{
+    const geo = await fetch(https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}).then(r=>r.json());
+    if(!geo[0]){ listEl.innerHTML = '<li class="item">City not found</li>'; return; }
+    const lat = geo[0].lat, lon = geo[0].lon;
+    const wres = await fetch(https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia/Kolkata).then(r=>r.json());
+    const cw = wres.current_weather;
+    if(!cw) throw 'No weather';
+    listEl.innerHTML = 
+      <li class="item"><strong>City:</strong> ${escapeHtml(city)}</li>
+      <li class="item"><strong>Temperature:</strong> ${cw.temperature} °C</li>
+      <li class="item"><strong>Wind:</strong> ${cw.windspeed} km/h</li>
+      <li class="item"><strong>Condition:</strong> ${escapeHtml(weatherDesc(cw.weathercode))}</li>
+    ;
+  }catch(err){ console.error(err); listEl.innerHTML = '<li class="item">Error fetching weather</li>'; }
+}
+function weatherDesc(code){ const map={0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',80:'Rain showers',95:'Thunderstorm'}; return map[code]||'Unknown'; }
+
+/* =========================
+   Fertilizer calculation
+   ========================= */
+function calcFertilizerSoil(){
+  const area = parseFloat(document.getElementById('farmSize2').value || '0');
+  const crop = document.getElementById('cropType2').value;
+  if(area <= 0){ document.getElementById('fertSoilOut').textContent = 'Enter valid area.'; return; }
+  const map = { rice:{N:50,P:25,K:30}, wheat:{N:70,P:30,K:30}, maize:{N:80,P:35,K:35}, cotton:{N:60,P:25,K:45} };
+  const rec = map[crop] || map.rice;
+  const total = {N: Math.round(rec.N * area), P: Math.round(rec.P * area), K: Math.round(rec.K * area)};
+  document.getElementById('fertSoilOut').textContent = For ${area} acres of ${crop}: N=${total.N}kg, P=${total.P}kg, K=${total.K}kg. Soil test every 6 months.;
+}
+
+/* =========================
+   Disease demo (image preview + demo predict)
+   ========================= */
+document.getElementById('imageUpload')?.addEventListener('change', ev=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('preview').src = e.target.result; document.getElementById('preview').style.display = 'block'; };
+  reader.readAsDataURL(file);
+  document.getElementById('prediction').textContent = 'Demo only';
+});
+function tryDemoPredict(){ const classes = ['Healthy','Blight','Rust']; const idx = Math.floor(Math.random()*classes.length); const val = (Math.random()*100).toFixed(2); document.getElementById('prediction').textContent = Demo: ${classes[idx]} (${val}%); }
+
+/* =========================
+   Embedded Map logic (Leaflet + Overpass + Nominatim)
+   - Map is loaded once on page load
+   - "Refresh My Location" triggers geolocation + Overpass
+   - "Enter City" geocodes via Nominatim, then Overpass search
+   - Results are shown on map and in a list; map recenters to nearest market
+   - Medium height (~400px)
+   ========================= */
+
+let embeddedMap = null;
+let embeddedMarkers = null;
+
+function initEmbeddedMap(){
+  // create map in page's #embeddedMap element
+  const el = document.getElementById('embeddedMap');
+  // initialize only once
+  if(embeddedMap) return;
+  embeddedMap = L.map(el, { zoomControl:true, attributionControl:true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors' }).addTo(embeddedMap);
+  embeddedMarkers = L.layerGroup().addTo(embeddedMap);
+  // set default view to India
+  embeddedMap.setView([20.5937,78.9629],5);
+}
+
+/* helper to clear markers */
+function clearEmbeddedMarkers(){ if(embeddedMarkers) embeddedMarkers.clearLayers(); document.getElementById('apmcList').innerHTML=''; document.getElementById('apmcResult').textContent=''; document.getElementById('modalNote')?.remove(); }
+
+/* Overpass query to find nearby markets/APMC for the embedded map */
+async function overpassFindMarkets(lat, lon, radius=30000){
+  const queries = [
+    node(around:${radius},${lat},${lon})[name~"APMC|A\\.P\\.M\\.C|A P M C|mandi|mandai|market",i];,
+    way(around:${radius},${lat},${lon})[name~"APMC|A\\.P\\.M\\.C|A P M C|mandi|mandai|market",i];,
+    relation(around:${radius},${lat},${lon})[name~"APMC|A\\.P\\.M\\.C|A P M C|mandi|mandai|market",i];,
+    node(around:${radius},${lat},${lon})[amenity=marketplace];,
+    node(around:${radius},${lat},${lon})[shop=market];
+  ];
+  const ql = [out:json][timeout:25];(${queries.join('')});out center;;
+  const resp = await fetch('https://overpass-api.de/api/interpreter', { method:'POST', body:ql, headers:{'Content-Type':'text/plain'} });
+  if(!resp.ok) throw new Error('Overpass error ' + resp.status);
+  const data = await resp.json();
+  return data.elements || [];
+}
+
+/* Haversine distance */
+function distanceBetween(lat1, lon1, lat2, lon2){
+  const R = 6371000;
+  const toRad = v => v * Math.PI / 180;
+  const φ1 = toRad(lat1), φ2 = toRad(lat2), Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);
+  const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)*Math.sin(Δλ/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* When user clicks "Refresh My Location" on embedded map */
+async function embeddedLocateAndSearch(){
+  clearEmbeddedMarkers();
+  document.getElementById('apmcResult').textContent = 'Getting your location...';
+  if(!navigator.geolocation){ document.getElementById('apmcResult').textContent = 'Geolocation not supported. Enter a city.'; return; }
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    if(!embeddedMap) initEmbeddedMap();
+    // add user marker
+    L.marker([lat, lon]).bindPopup('You are here').addTo(embeddedMarkers);
+    embeddedMap.setView([lat, lon], 12);
+    document.getElementById('apmcResult').textContent = 'Searching nearby markets (Overpass)...';
+    try{
+      const elems = await overpassFindMarkets(lat, lon, 30000);
+      if(!elems || elems.length===0){
+        // fallback: show a few common APMCs
+        showFallbackAPMCs(lat, lon);
+        document.getElementById('apmcResult').textContent = 'No nearby markets found — showing fallback APMC markers.';
+        return;
+      }
+      processEmbeddedOverpassElements(elems, lat, lon);
+    }catch(e){
+      console.error(e);
+      showFallbackAPMCs(lat, lon);
+      document.getElementById('apmcResult').textContent = 'Overpass error — showing fallback APMCs.';
+    }
+  }, err=>{
+    console.warn('Geolocation error', err);
+    document.getElementById('apmcResult').textContent = 'Location denied/unavailable. Enter a city.';
+  }, { timeout:12000, maximumAge:60000 });
+}
+
+/* If Overpass fails or returns empty, show some fallback APMC markers so map isn't blank */
+function showFallbackAPMCs(centerLat, centerLon){
+  if(!embeddedMap) initEmbeddedMap();
+  clearEmbeddedMarkers();
+  const fallback = [
+    {name:'Hubli APMC', lat:15.3633, lon:75.1235},
+    {name:'Gadag APMC', lat:15.4280, lon:75.6290},
+    {name:'Dharwad Mandi', lat:15.4589, lon:75.0078},
+    {name:'Haveri Mandi', lat:14.8030, lon:75.4045},
+    {name:'Belagavi Market', lat:15.8497, lon:74.4977}
+  ];
+  fallback.forEach((s, i)=>{
+    const color = i % 3 === 0 ? '#77dd77' : (i % 3 === 1 ? '#f9d976' : '#f39c12');
+    const mk = L.circleMarker([s.lat, s.lon], { radius:8, color:'#2f4a1a', fillColor:color, fillOpacity:1 });
+    mk.bindPopup(<strong>${escapeHtml(s.name)}</strong>);
+    mk.addTo(embeddedMarkers);
+  });
+  if(centerLat && centerLon) embeddedMap.setView([centerLat, centerLon], 8);
+  populateAPMCList(fallback.map(x=>({name:x.name,lat:x.lat,lon:x.lon,dist: centerLat?Math.round(distanceBetween(centerLat,centerLon||centerLon,x.lat,x.lon)):null})));
+}
+
+/* Process elements returned from Overpass for embedded map */
+function processEmbeddedOverpassElements(elements, centerLat, centerLon){
+  if(!elements || elements.length===0){ populateAPMCList([],'No results'); return; }
+  const items = [];
+  const seen = new Set();
+  elements.forEach(el=>{
+    const key = ${el.type}_${el.id};
+    if(seen.has(key)) return;
+    seen.add(key);
+    const lat = el.lat !== undefined ? el.lat : (el.center && el.center.lat);
+    const lon = el.lon !== undefined ? el.lon : (el.center && el.center.lon);
+    if(!lat || !lon) return;
+    const name = (el.tags && (el.tags.name || el.tags['official_name'])) || (el.tags && el.tags['description']) || 'Unnamed market';
+    items.push({ name, lat, lon, tags:el.tags||{}, dist: distanceBetween(centerLat, centerLon, lat, lon) });
+  });
+  items.sort((a,b)=>a.dist - b.dist);
+  clearEmbeddedMarkers();
+  items.slice(0,12).forEach((it, idx)=>{
+    const color = idx % 3 === 0 ? '#77dd77' : (idx % 3 === 1 ? '#f9d976' : '#f39c12');
+    const mk = L.circleMarker([it.lat, it.lon], { radius:8, color:'#2f4a1a', fillColor:color, fillOpacity:1 });
+    mk.bindPopup(<strong>${escapeHtml(it.name)}</strong><div class="small-muted">Distance ${Math.round(it.dist)} m</div>);
+    mk.addTo(embeddedMarkers);
+  });
+  if(items[0]) embeddedMap.setView([items[0].lat, items[0].lon], 13);
+  populateAPMCList(items);
+  document.getElementById('apmcResult').textContent = Found ${items.length} markets — showing nearest.;
+}
+
+/* Show list adjacent to map (embedded page) */
+function populateAPMCList(items, fallbackMsg){
+  const container = document.getElementById('apmcList');
+  container.innerHTML = '';
+  const pageResult = document.getElementById('apmcResult');
+  pageResult.innerHTML = '';
+  if(!items || items.length===0){
+    if(fallbackMsg) container.innerHTML = <div class="small-muted">${escapeHtml(fallbackMsg)}</div>;
+    return;
+  }
+  const ul = document.createElement('ul'); ul.style.listStyle='none'; ul.style.padding='0';
+  items.slice(0,6).forEach(it=>{
+    const li = document.createElement('li'); li.className='item'; li.style.marginBottom='8px';
+    li.innerHTML = <div style="flex:1;"><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Distance: ${it.dist ? Math.round(it.dist)+' m' : '—'}</div></div>
+                    <div><button class="refresh-btn" onclick="embeddedPanTo(${it.lat}, ${it.lon})">Go</button></div>;
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+  if(items[0]) pageResult.textContent = Nearest APMC: ${items[0].name} (${Math.round(items[0].dist)} m);
+}
+
+/* Pan map to location on button click */
+function embeddedPanTo(lat, lon){ if(embeddedMap) embeddedMap.setView([lat, lon], 14); }
+
+/* Manual city search for embedded map */
+document.getElementById('embeddedCityBtn').addEventListener('click', async ()=>{
+  const city = document.getElementById('embeddedCity').value.trim();
+  if(!city){ alert('Enter city'); return; }
+  document.getElementById('apmcResult').textContent = 'Geocoding city...';
+  try{
+    const geoResp = await fetch(https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)});
+    const geo = await geoResp.json();
+    if(!geo[0]){ document.getElementById('apmcResult').textContent='City not found'; return; }
+    const lat = parseFloat(geo[0].lat), lon = parseFloat(geo[0].lon);
+    if(!embeddedMap) initEmbeddedMap();
+    clearEmbeddedMarkers();
+    L.marker([lat, lon]).bindPopup(escapeHtml(geo[0].display_name)).addTo(embeddedMarkers).openPopup();
+    embeddedMap.setView([lat, lon], 12);
+    document.getElementById('apmcResult').textContent='Searching nearby markets (Overpass)...';
+    try{
+      const elems = await overpassFindMarkets(lat, lon, 45000);
+      if(!elems || elems.length===0){ document.getElementById('apmcResult').textContent='No markets found near that city.'; showFallbackAPMCs(lat, lon); return; }
+      processEmbeddedOverpassElements(elems, lat, lon);
+    }catch(e){
+      console.error(e); showFallbackAPMCs(lat, lon); document.getElementById('apmcResult').textContent='Overpass error — showing fallback APMCs.';
+    }
+  }catch(e){
+    console.error('Geocode error', e);
+    document.getElementById('apmcResult').textContent='Geocode failed; check network.';
+  }
+});
+
+/* Embedded locate button wiring */
+document.getElementById('embeddedLocateBtn').addEventListener('click', embeddedLocateAndSearch);
+
+/* Initialize embedded map on page load */
+document.addEventListener('DOMContentLoaded', ()=>{
+  initEmbeddedMap();
+  // Try to update map with cached preference or center
+  loadMarketRates();
+  fetchLatestNews();
+});
+
+// Escape key tidy-ups for news modal
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ document.getElementById('newsSiteModal').style.display='none'; } });
+
+/* =========================
+   Initialization calls (safe default content)
+   ========================= */
+loadMarketRates();
+fetchLatestNews();
+
+/* Done */
+</script>
+</body>
+</html>

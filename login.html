@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"content="width=device-width, initial-scale=1.0" />
+<title>Krishi Connect | Login 🌾</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --orange: #FF7A00;
+  --yellow: #FFD54F;
+  --green: #3AA76D;
+  --white: #fff;
+  --black: #222;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.4s, color 0.4s;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(255,122,0,0.4), rgba(255,213,79,0.4), rgba(58,167,109,0.4)),
+    url('https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=1600&q=80')
+    center/cover no-repeat;
+  color: var(--black);
+  overflow: hidden;
+}
+
+body.dark {
+  background:
+    linear-gradient(135deg, rgba(0,0,0,0.9), rgba(30,30,30,0.8)),
+    url('https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=1600&q=80')
+    center/cover no-repeat;
+  color: var(--white);
+}
+
+/* Dark/light toggle */
+.toggle {
+  position: absolute;
+  left: 20px; top: 20px;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  z-index: 10;
+}
+body.dark .toggle { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* Language dropdown */
+.lang-select {
+  position: absolute;
+  right: 20px; top: 20px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(5px);
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 10;
+}
+body.dark .lang-select { background: rgba(255,255,255,0.15); color: #fff; }
+
+.container {
+  z-index: 2;
+  width: 360px;
+  max-width: 95vw;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  text-align: center;
+  padding: 40px 30px 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  animation: fadeIn 1.2s ease;
+  border: 4px solid transparent;
+}
+body.dark .container { background: rgba(0,0,0,0.7); }
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tagline {
+  font-size: 13px;
+  margin-bottom: 25px;
+  opacity: 0.9;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 0;
+  font-weight: 600;
+  background: rgba(0,0,0,0.1);
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tabs button.active {
+  background: linear-gradient(90deg, var(--orange), var(--yellow));
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255,122,0,0.4);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+input, textarea, select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.9);
+  color: #333;
+  font-size: 14px;
+}
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+button.submit {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(90deg, var(--green), var(--orange));
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(58,167,109,0.4);
+  transition: transform 0.2s;
+}
+button.submit:hover { transform: translateY(-3px); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* OTP inputs */
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.otp-inputs input {
+  width: 40px;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* Avatar section */
+.avatar-select {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 25px;
+}
+
+/* Avatar layout */
+.avatar {
+  width: 80px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.3s, border 0.3s;
+  position: relative;
+}
+
+.avatar .avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar:hover { transform: scale(1.05); }
+
+.avatar.selected .avatar-img {
+  border: 3px solid var(--green);
+  box-shadow: 0 6px 18px rgba(58,167,109,0.12);
+}
+
+.avatar.winking .avatar-img img {
+  animation: wink 0.4s ease;
+}
+
+@keyframes wink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.2); }
+}
+
+/* gender label */
+.gender-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  background: rgba(255,255,255,0.95);
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 50px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+body.dark .gender-label {
+  background: rgba(255,255,255,0.95);
+  color: #000;
+}
+
+.prompt {
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+/* Google auth button */
+.google-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: #1f2933;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  font-size: 14px;
+}
+body.dark .google-btn {
+  background: #111827;
+  color: #f9fafb;
+}
+.google-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Status message */
+#authMessage {
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 18px;
+}
+#authMessage.success { color: #16a34a; }
+#authMessage.error { color: #ef4444; }
+
+/* small note */
+.small-note {
+  font-size: 11px;
+  margin-top: 6px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+  <!-- theme toggle -->
+  <div class="toggle" onclick="toggleMode()">🌞 / 🌙</div>
+
+  <!-- language select -->
+  <select class="lang-select" id="langSelect" onchange="changeLang()">
+    <option value="en">English</option>
+    <option value="hi">हिंदी</option>
+    <option value="kn">ಕನ್ನಡ</option>
+  </select>
+
+  <!-- main card -->
+  <div class="container" id="formBox">
+    <h1 id="title">🌾 Krishi Connect</h1>
+    <p class="tagline" id="tagline">Empowering farmers with real-time insights & guidance</p>
+
+    <!-- Avatar Selection -->
+    <div id="avatarSection">
+      <p class="prompt" id="avatarPrompt">👋 Welcome! May I know who is using the website?</p>
+      <div class="avatar-select">
+        <div class="avatar" id="maleAvatar" role="button" tabindex="0" aria-label="Male avatar">
+          <div class="avatar-img">
+            <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Male Avatar">
+          </div>
+          <div class="gender-label" id="maleLabel">Male</div>
+        </div>
+
+        <div class="avatar" id="femaleAvatar" role="button" tabindex="0" aria-label="Female avatar">
+          <div class="avatar-img">
+            <img src="https://cdn-icons-png.flaticon.com/512/4140/4140051.png" alt="Female Avatar">
+          </div>
+          <div class="gender-label" id="femaleLabel">Female</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login/Signup Tabs -->
+    <div id="authSection" style="display:none;">
+      <div class="tabs">
+        <button id="loginTab" class="active" onclick="showForm('login')">Login</button>
+        <button id="signupTab" onclick="showForm('signup')">Signup</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email" required>
+        <input id="loginPassword" type="password" placeholder="Password" required>
+        <button type="submit" class="submit" id="loginBtnMain">Login</button>
+
+        <button type="button" class="google-btn" id="googleLoginBtn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
+          <span id="googleLoginText">Login with Google</span>
+        </button>
+        <div class="small-note" id="loginNote">
+          Login will redirect you to the main dashboard (index.html) and sync tokens & usage time.
+        </div>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="signupForm" style="display:none;">
+        <input id="signupName" type="text" placeholder="Full Name" required>
+        <input id="signupEmail" type="email" placeholder="Email" required>
+        <input id="signupPassword" type="password" placeholder="Create Password" required>
+        <div class="otp-inputs">
+          <!-- demo-only OTP (not real verification, just UI) -->
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+        </div>
+        <button type="submit" class="submit" id="signupBtnMain">Signup</button>
+
+        <button type="button" class="google-btn" id="googleSignupBtn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
+          <span id="googleSignupText">Signup with Google</span>
+        </button>
+        <div class="small-note" id="signupNote">
+          Signup will create your account in Firebase Auth and then open the main dashboard.
+        </div>
+      </form>
+
+      <div id="authMessage"></div>
+    </div>
+  </div>
+
+<script>
+/* ---------- basic usage tracking (shared with other pages) ---------- */
+let pageStart = Date.now();
+function updateUsage(deltaMs){
+  if(deltaMs <= 0) return;
+  try{
+    let total = parseInt(localStorage.getItem('krishiUsageMs') || '0', 10);
+    if(isNaN(total) || total < 0) total = 0;
+    total += deltaMs;
+    localStorage.setItem('krishiUsageMs', String(total));
+
+    const today = new Date().toISOString().slice(0,10);
+    let days = [];
+    try{
+      days = JSON.parse(localStorage.getItem('krishiVisitDays') || '[]');
+      if(!Array.isArray(days)) days = [];
+    }catch(e){ days = []; }
+    if(!days.includes(today)){
+      days.push(today);
+      localStorage.setItem('krishiVisitDays', JSON.stringify(days));
+    }
+  }catch(e){}
+}
+window.addEventListener('beforeunload', ()=>{
+  const delta = Date.now() - pageStart;
+  updateUsage(delta);
+});
+
+/* ---------- DARK MODE ---------- */
+function toggleMode() {
+  document.body.classList.toggle("dark");
+  const mode = document.body.classList.contains('dark') ? 'dark' : 'light';
+  try{ localStorage.setItem('krishi_theme', mode); }catch(e){}
+}
+(function initThemeFromStorage(){
+  try{
+    const mode = localStorage.getItem('krishi_theme');
+    if(mode === 'dark') document.body.classList.add('dark');
+  }catch(e){}
+})();
+
+/* ---------- ELEMENTS ---------- */
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const loginTab = document.getElementById("loginTab");
+const signupTab = document.getElementById("signupTab");
+const title = document.getElementById("title");
+const tagline = document.getElementById("tagline");
+const langSelect = document.getElementById("langSelect");
+const formBox = document.getElementById("formBox");
+const authMessage = document.getElementById("authMessage");
+
+const maleAvatar = document.getElementById("maleAvatar");
+const femaleAvatar = document.getElementById("femaleAvatar");
+const avatarSection = document.getElementById("avatarSection");
+const authSection = document.getElementById("authSection");
+
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+const googleSignupBtn = document.getElementById("googleSignupBtn");
+
+/* ---------- TRANSLATIONS ---------- */
+const translations = {
+  en: {
+    title: "🌾 Krishi Connect",
+    tagline: "Empowering farmers with real-time insights & guidance",
+    avatarPrompt: "👋 Welcome! May I know who is using the website?",
+    maleLabel: "Male",
+    femaleLabel: "Female",
+    loginTab: "Login",
+    signupTab: "Signup",
+    loginEmail: "Email",
+    loginPassword: "Password",
+    loginBtnMain: "Login",
+    loginNote: "Login will redirect you to the main dashboard (index.html) and sync tokens & usage time.",
+    signupName: "Full Name",
+    signupEmail: "Email",
+    signupPassword: "Create Password",
+    signupBtnMain: "Signup",
+    signupNote: "Signup will create your account in Firebase Auth and then open the main dashboard.",
+    googleLoginText: "Login with Google",
+    googleSignupText: "Signup with Google",
+    msgLoading: "Processing...",
+    msgLoginSuccess: "Login successful! Redirecting...",
+    msgSignupSuccess: "Signup successful! Redirecting...",
+    msgErrorGeneric: "Something went wrong. Please try again.",
+    msgEmailRequired: "Please enter a valid email & password.",
+    msgAvatarMissing: "Please choose an avatar (Male/Female) first.",
+    msgAlreadyLoggedIn: "You are already logged in. Redirecting to dashboard...",
+  },
+  hi: {
+    title: "🌾 कृषि कनेक्ट",
+    tagline: "किसानों को वास्तविक समय में मार्गदर्शन और जानकारी प्रदान करना",
+    avatarPrompt: "👋 स्वागत है! कृपया बताएं कौन उपयोग कर रहा है?",
+    maleLabel: "पुरुष",
+    femaleLabel: "महिला",
+    loginTab: "लॉगिन",
+    signupTab: "साइनअप",
+    loginEmail: "ईमेल",
+    loginPassword: "पासवर्ड",
+    loginBtnMain: "लॉगिन",
+    loginNote: "लॉगिन के बाद आपको मुख्य डैशबोर्ड (index.html) पर भेजा जाएगा और समय/टोकन सिंक होंगे।",
+    signupName: "पूरा नाम",
+    signupEmail: "ईमेल",
+    signupPassword: "पासवर्ड बनाएं",
+    signupBtnMain: "साइनअप",
+    signupNote: "साइनअप आपके लिए Firebase Auth में अकाउंट बनाएगा और फिर मुख्य डैशबोर्ड खोलेगा।",
+    googleLoginText: "Google से लॉगिन",
+    googleSignupText: "Google से साइनअप",
+    msgLoading: "प्रोसेस हो रहा है...",
+    msgLoginSuccess: "लॉगिन सफल! रीडायरेक्ट हो रहा है...",
+    msgSignupSuccess: "साइनअप सफल! रीडायरेक्ट हो रहा है...",
+    msgErrorGeneric: "कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।",
+    msgEmailRequired: "कृपया सही ईमेल और पासवर्ड दर्ज करें।",
+    msgAvatarMissing: "कृपया पहले अवतार (पुरुष/महिला) चुनें।",
+    msgAlreadyLoggedIn: "आप पहले से लॉगिन हैं। डैशबोर्ड पर भेजा जा रहा है...",
+  },
+  kn: {
+    title: "🌾 ಕೃಷಿ ಕನೆಕ್ಟ್",
+    tagline: "ಕೃಷಕರಿಗೆ ತ್ವರಿತ ಮಾರ್ಗದರ್ಶನ ಮತ್ತು ಮಾಹಿತಿ ನೀಡಿಕೆ",
+    avatarPrompt: "👋 ನಮಸ್ಕಾರ! ಈ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಯಾರು ಬಳಸುತ್ತಿದ್ದಾರೆ?",
+    maleLabel: "ಪುರುಷ",
+    femaleLabel: "ಮಹಿಳೆ",
+    loginTab: "ಲಾಗಿನ್",
+    signupTab: "ಸೈನ್ ಅಪ್",
+    loginEmail: "ಇ-ಮೇಲ್",
+    loginPassword: "ಪಾಸ್ವರ್ಡ್",
+    loginBtnMain: "ಲಾಗಿನ್",
+    loginNote: "ಲಾಗಿನ್ ನಂತರ ನಿಮಗೆ ಮುಖ್ಯ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ (index.html) ತೆರೆದಿಡಲಾಗುತ್ತದೆ ಮತ್ತು ಸಮಯ/ಟೋಕನ್ ಸಿಂಕ್ ಆಗುತ್ತವೆ.",
+    signupName: "ಪೂರ್ಣ ಹೆಸರು",
+    signupEmail: "ಇ-ಮೇಲ್",
+    signupPassword: "ಪಾಸ್ವರ್ಡ್ ರಚಿಸಿ",
+    signupBtnMain: "ಸೈನ್ ಅಪ್",
+    signupNote: "ಸೈನ್ ಅಪ್ ಮಾಡಿದ ನಂತರ Firebase Auth ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆ ಸೃಷ್ಟಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ನಂತರ ಮುಖ್ಯ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆದಿಡಲಾಗುತ್ತದೆ.",
+    googleLoginText: "Google ಮೂಲಕ ಲಾಗಿನ್",
+    googleSignupText: "Google ಮೂಲಕ ಸೈನ್ ಅಪ್",
+    msgLoading: "ಪ್ರಕ್ರಿಯೆ ನಡೆದುಕೊಂಡಿದೆ...",
+    msgLoginSuccess: "ಲಾಗಿನ್ ಯಶಸ್ವಿ! ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ...",
+    msgSignupSuccess: "ಸೈನ್ ಅಪ್ ಯಶಸ್ವಿ! ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ...",
+    msgErrorGeneric: "ಏதேೂೕ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    msgEmailRequired: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಇ-ಮೇಲ್ ಮತ್ತು ಪಾಸ್ವರ್ಡ್ ನಮೂದಿಸಿ.",
+    msgAvatarMissing: "ದಯವಿಟ್ಟು ಮೊದಲು ಅವತಾರ (ಪುರುಷ/ಮಹಿಳೆ) ಆಯ್ಕೆಮಾಡಿ.",
+    msgAlreadyLoggedIn: "ನೀವು ಈಗಾಗಲೇ ಲಾಗಿನ್ ಆಗಿದ್ದೀರಿ. ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+  }
+};
+
+let currentLang = (function(){
+  try { return localStorage.getItem('krishi_lang') || 'en'; }catch(e){ return 'en'; }
+})();
+
+function applyTranslations(lang) {
+  if(!translations[lang]) lang = 'en';
+  currentLang = lang;
+  try{ localStorage.setItem('krishi_lang', lang); }catch(e){}
+
+  const t = translations[lang];
+  title.textContent = t.title;
+  tagline.textContent = t.tagline;
+  document.getElementById('avatarPrompt').textContent = t.avatarPrompt;
+  document.getElementById('maleLabel').textContent = t.maleLabel;
+  document.getElementById('femaleLabel').textContent = t.femaleLabel;
+  loginTab.textContent = t.loginTab;
+  signupTab.textContent = t.signupTab;
+  document.getElementById('loginEmail').placeholder = t.loginEmail;
+  document.getElementById('loginPassword').placeholder = t.loginPassword;
+  document.getElementById('loginBtnMain').textContent = t.loginBtnMain;
+  document.getElementById('loginNote').textContent = t.loginNote;
+  document.getElementById('signupName').placeholder = t.signupName;
+  document.getElementById('signupEmail').placeholder = t.signupEmail;
+  document.getElementById('signupPassword').placeholder = t.signupPassword;
+  document.getElementById('signupBtnMain').textContent = t.signupBtnMain;
+  document.getElementById('signupNote').textContent = t.signupNote;
+  document.getElementById('googleLoginText').textContent = t.googleLoginText;
+  document.getElementById('googleSignupText').textContent = t.googleSignupText;
+
+  // sync the <select>
+  langSelect.value = lang;
+}
+
+function changeLang() {
+  applyTranslations(langSelect.value);
+}
+
+/* init language */
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations(currentLang);
+});
+
+/* ---------- voice / avatars ---------- */
+let voices = [];
+function loadVoices() {
+  voices = speechSynthesis.getVoices() || [];
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+/* Helper: choose a voice for the requested gender */
+function selectVoiceForGender(gender) {
+  const maleCandidates = ["male","daniel","alex","david","john","mark","matthew","google us english","google uk english male","en-us-wavenet-d","en-GB-Standard-B","en-US-Standard-B"];
+  const femaleCandidates = ["female","zira","susan","victoria","alloy","emma","google us english female","google uk english female","en-us-wavenet-f","en-GB-Standard-A","en-US-Standard-A"];
+  const norm = s => (s || "").toLowerCase();
+
+  if (voices.length) {
+    const list = voices.slice();
+    if (gender === "male") {
+      for (const cand of maleCandidates) {
+        const found = list.find(v => norm(v.name).includes(cand) || norm(v.voiceURI).includes(cand));
+        if (found) return found;
+      }
+      const engMale = list.find(v => norm(v.lang || "").startsWith("en") && (norm(v.name).includes("male") || !norm(v.name).includes("female")));
+      if (engMale) return engMale;
+    } else {
+      for (const cand of femaleCandidates) {
+        const found = list.find(v => norm(v.name).includes(cand) || norm(v.voiceURI).includes(cand));
+        if (found) return found;
+      }
+      const engFemale = list.find(v => norm(v.lang || "").startsWith("en") && norm(v.name).includes("female"));
+      if (engFemale) return engFemale;
+    }
+    const anyEng = list.find(v => norm(v.lang || "").startsWith("en"));
+    if (anyEng) return anyEng;
+    return list[0];
+  }
+  return null;
+}
+
+/* generic speech helper */
+function speakWithGender(text, gender){
+  if(!text) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.pitch = 1;
+  msg.rate = 1;
+  msg.volume = 1;
+  const chosen = selectVoiceForGender(gender);
+  if (chosen) {
+    msg.voice = chosen;
+    if (gender === "male") {
+      msg.pitch = 0.9;
+      msg.rate = 1;
+    } else {
+      msg.pitch = 1.05;
+      msg.rate = 1;
+    }
+  }
+  try{ speechSynthesis.speak(msg); }catch(e){}
+}
+
+/* simple welcome (on avatar tap) */
+function playVoice(gender) {
+  speakWithGender("Welcome to Krishi Connect", gender);
+}
+
+/* PERSONALIZED welcome after login/signup */
+function speakWelcomeForUser(nameRaw){
+  let name = (nameRaw || "").trim();
+  if(!name){
+    name = "Farmer";
+  }
+  // Make first letter uppercase only (simple)
+  name = name.charAt(0).toUpperCase() + name.slice(1);
+  const gender = window.chosenGender || localStorage.getItem('krishi_gender') || 'male';
+  const text = `Welcome ${name} to Krishi Connect`;
+  speakWithGender(text, gender);
+}
+window.speakWelcomeForUser = speakWelcomeForUser;
+
+/* UI logic */
+function showForm(form) {
+  if(form === "login") {
+    signupForm.style.display = "none";
+    loginForm.style.display = "flex";
+    loginTab.classList.add("active");
+    signupTab.classList.remove("active");
+  } else {
+    loginForm.style.display = "none";
+    signupForm.style.display = "flex";
+    loginTab.classList.remove("active");
+    signupTab.classList.add("active");
+  }
+}
+
+/* Avatar clicks: show auth section + voice + store gender */
+let chosenGender = null;
+window.chosenGender = null; // also on window for module to use if needed
+
+maleAvatar.addEventListener("click", () => {
+  chosenGender = 'male';
+  window.chosenGender = 'male';
+  try{ localStorage.setItem('krishi_gender','male'); }catch(e){}
+  maleAvatar.classList.add("selected","winking");
+  femaleAvatar.classList.remove("selected","winking");
+  formBox.style.border = "4px solid var(--green)";
+  formBox.style.boxShadow = "0 0 30px rgba(58,167,109,0.5)";
+  playVoice("male");
+  setTimeout(() => maleAvatar.classList.remove("winking"), 400);
+  avatarSection.style.display = "none";
+  authSection.style.display = "block";
+});
+
+maleAvatar.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    maleAvatar.click();
+  }
+});
+
+femaleAvatar.addEventListener("click", () => {
+  chosenGender = 'female';
+  window.chosenGender = 'female';
+  try{ localStorage.setItem('krishi_gender','female'); }catch(e){}
+  femaleAvatar.classList.add("selected","winking");
+  maleAvatar.classList.remove("selected","winking");
+  formBox.style.border = "4px solid var(--orange)";
+  formBox.style.boxShadow = "0 0 30px rgba(255,122,0,0.5)";
+  playVoice("female");
+  setTimeout(() => femaleAvatar.classList.remove("winking"), 400);
+  avatarSection.style.display = "none";
+  authSection.style.display = "block";
+});
+
+femaleAvatar.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    femaleAvatar.click();
+  }
+});
+
+/* helpers for message + saving user */
+function setAuthMessage(type, text){
+  authMessage.classList.remove('success','error');
+  if(type) authMessage.classList.add(type);
+  authMessage.textContent = text || '';
+}
+
+/* save auth user globally (used by module) */
+function saveAuthUser(user, provider) {
+  if(!user) return;
+  const stored = {
+    uid: user.uid || "",
+    email: user.email || "",
+    displayName: user.displayName || (user.email ? user.email.split('@')[0] : "Farmer"),
+    photoURL: user.photoURL || "",
+    providerId: provider || (user.providerData && user.providerData[0] && user.providerData[0].providerId) || "password",
+    lastLoginAt: new Date().toISOString(),
+    gender: chosenGender || (localStorage.getItem('krishi_gender') || null)
+  };
+  try {
+    localStorage.setItem("krishiAuthUser", JSON.stringify(stored));
+  } catch(e) {}
+}
+window.saveAuthUser = saveAuthUser;
+
+/* auto redirect if already logged in */
+(function checkAlreadyLoggedIn(){
+  try{
+    const u = JSON.parse(localStorage.getItem('krishiAuthUser') || 'null');
+    if(u && u.email){
+      setAuthMessage('success', translations[currentLang].msgAlreadyLoggedIn);
+      setTimeout(()=>{ window.location.href = 'index.html'; }, 1300);
+    }
+  }catch(e){}
+})();
+</script>
+
+<!-- Firebase Auth (modular v9) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+/* same config as index.html */
+const firebaseConfig = {
+  apiKey: "AIzaSyBk821Ctp7sxnSFfFCvv-EEGEyxsc8z0hc",
+  authDomain: "rishiconnect.firebaseapp.com",
+  databaseURL: "https://rishiconnect-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "rishiconnect",
+  storageBucket: "rishiconnect.firebasestorage.app",
+  messagingSenderId: "181023340263",
+  appId: "1:181023340263:web:8fd7371d882b5555ae1442",
+  measurementId: "G-E5NCP0DZ0V"
+};
+
+let app, auth;
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  auth.useDeviceLanguage();
+  window.krishiAuthReady = true;
+} catch (err) {
+  console.error("Firebase init failed", err);
+  window.krishiAuthReady = false;
+}
+
+/* DOM elements */
+const loginForm_el = document.getElementById("loginForm");
+const signupForm_el = document.getElementById("signupForm");
+const loginEmail_el = document.getElementById("loginEmail");
+const loginPassword_el = document.getElementById("loginPassword");
+const signupName_el = document.getElementById("signupName");
+const signupEmail_el = document.getElementById("signupEmail");
+const signupPassword_el = document.getElementById("signupPassword");
+const googleLoginBtn_el = document.getElementById("googleLoginBtn");
+const googleSignupBtn_el = document.getElementById("googleSignupBtn");
+const authMessage_el = document.getElementById("authMessage");
+
+/* translation helper */
+function t(key){
+  try{
+    const lang = window.currentLang || 'en';
+    return (window.translations && window.translations[lang] && window.translations[lang][key]) || key;
+  }catch(e){ return key; }
+}
+function setAuthMessageModule(type,text){
+  authMessage_el.classList.remove('success','error');
+  if(type) authMessage_el.classList.add(type);
+  authMessage_el.textContent = text || '';
+}
+
+/* share helpers from global */
+const saveAuthUserFn = window.saveAuthUser;
+const speakWelcome = window.speakWelcomeForUser;
+
+/* email/password LOGIN */
+loginForm_el.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = (loginEmail_el.value || "").trim();
+  const password = (loginPassword_el.value || "").trim();
+
+  if(!email || !password){
+    setAuthMessageModule('error', t('msgEmailRequired'));
+    return;
+  }
+  if(!window.krishiAuthReady){
+    setAuthMessageModule('error', "Auth not ready. Check network.");
+    return;
+  }
+  setAuthMessageModule('', t('msgLoading'));
+  try {
+    const res = await signInWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+    if(saveAuthUserFn) saveAuthUserFn(user, "password");
+
+    // personalized voice
+    if(speakWelcome){
+      const name = user.displayName || (user.email ? user.email.split('@')[0] : "Farmer");
+      speakWelcome(name);
+    }
+
+    setAuthMessageModule('success', t('msgLoginSuccess'));
+    setTimeout(()=>{ window.location.href = "index.html"; }, 950);
+  } catch(err) {
+    console.error(err);
+    let msg = t('msgErrorGeneric');
+    if(err.code === "auth/user-not-found") msg = "User not found. Please signup.";
+    if(err.code === "auth/wrong-password") msg = "Incorrect password.";
+    if(err.code === "auth/invalid-email") msg = "Invalid email address.";
+    setAuthMessageModule('error', msg);
+  }
+});
+
+/* email/password SIGNUP */
+signupForm_el.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = (signupName_el.value || "").trim();
+  const email = (signupEmail_el.value || "").trim();
+  const password = (signupPassword_el.value || "").trim();
+
+  if(!email || !password){
+    setAuthMessageModule('error', t('msgEmailRequired'));
+    return;
+  }
+  if(!window.krishiAuthReady){
+    setAuthMessageModule('error', "Auth not ready. Check network.");
+    return;
+  }
+  setAuthMessageModule('', t('msgLoading'));
+  try{
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+    if(name){
+      try { await updateProfile(user, { displayName: name }); } catch(e){}
+      user.displayName = name; // ensure local copy updated
+    }
+    if(saveAuthUserFn) saveAuthUserFn(user, "password");
+
+    // personalized voice
+    if(speakWelcome){
+      const n = user.displayName || (user.email ? user.email.split('@')[0] : "Farmer");
+      speakWelcome(n);
+    }
+
+    setAuthMessageModule('success', t('msgSignupSuccess'));
+    setTimeout(()=>{ window.location.href = "index.html"; }, 950);
+  }catch(err){
+    console.error(err);
+    let msg = t('msgErrorGeneric');
+    if(err.code === "auth/email-already-in-use") msg = "Email already in use. Please login.";
+    if(err.code === "auth/weak-password") msg = "Password should be at least 6 characters.";
+    setAuthMessageModule('error', msg);
+  }
+});
+
+/* GOOGLE SIGN-IN / SIGNUP */
+const provider = new GoogleAuthProvider();
+async function googleSignIn(){
+  if(!window.krishiAuthReady){
+    setAuthMessageModule('error', "Auth not ready. Check network.");
+    return;
+  }
+  setAuthMessageModule('', t('msgLoading'));
+  try{
+    const res = await signInWithPopup(auth, provider);
+    const user = res.user;
+    if(saveAuthUserFn) saveAuthUserFn(user, "google");
+
+    // personalized welcome voice
+    if(speakWelcome){
+      const n = user.displayName || (user.email ? user.email.split('@')[0] : "Farmer");
+      speakWelcome(n);
+    }
+
+    setAuthMessageModule('success', t('msgLoginSuccess'));
+    setTimeout(()=>{ window.location.href = "index.html"; }, 950);
+  }catch(err){
+    console.error(err);
+    setAuthMessageModule('error', t('msgErrorGeneric'));
+  }
+}
+
+googleLoginBtn_el.addEventListener("click", googleSignIn);
+googleSignupBtn_el.addEventListener("click", googleSignIn);
+</script>
+
+</body>
+</html>

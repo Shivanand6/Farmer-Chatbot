@@ -1,0 +1,1485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Krishi Connect | Empowering Farmers 🌾</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+:root{
+  --bg:#ffffff; --text:#172022; --muted:#6b7a6f;
+  --card-bg:rgba(255,255,255,0.96); --accent:#2f6f2f;
+  --accent-2:#f39c12; --shadow: rgba(7,10,7,0.08);
+}
+[data-theme="dark"]{
+  --bg:#0b1310; --text:#dfeee3; --muted:#9fb09a;
+  --card-bg:rgba(6,12,8,0.78); --accent:#9ad58b;
+  --accent-2:#f2c94c; --shadow: rgba(0,0,0,0.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Poppins',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+
+/* Topbar */
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  z-index:1300;
+  display:flex;
+  justify-content:center;
+  padding:10px 12px;
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(10px);
+  box-shadow:0 6px 20px var(--shadow);
+}
+[data-theme="dark"] .topbar{
+  background:rgba(10,16,12,0.98);
+}
+nav.nav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:600;
+  font-size:14px;
+  width:100%;
+  max-width:1100px;
+}
+
+/* Left controls (theme + language) */
+.controls-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-right:8px;
+}
+.theme-toggle button{
+  background:transparent;
+  border:1px solid rgba(0,0,0,0.08);
+  padding:5px 9px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:700;
+  color:var(--accent);
+}
+
+/* Language dropdown simple */
+.lang-select{
+  border-radius:8px;
+  border:1px solid rgba(0,0,0,0.08);
+  padding:5px 8px;
+  font-weight:600;
+  background:var(--card-bg);
+  cursor:pointer;
+}
+
+/* Center nav links */
+nav.nav a{
+  padding:8px 12px;
+  border-radius:20px;
+  background:transparent;
+  color:var(--accent);
+  transition:all .18s;
+}
+nav.nav a:hover,
+nav.nav a.active{
+  background:linear-gradient(45deg,#f9d976,#f39c12);
+  color:#fff;
+}
+
+/* Right profile pill */
+.profile-pill{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(255,255,255,0.9);
+  border-radius:999px;
+  padding:4px 8px 4px 4px;
+  border:1px solid rgba(0,0,0,0.06);
+  cursor:pointer;
+  position:relative;
+}
+[data-theme="dark"] .profile-pill{
+  background:rgba(12,20,10,0.92);
+}
+.profile-avatar{
+  width:30px;height:30px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#fcd34d,#22c55e);
+  color:#111827;
+  font-weight:800;
+  font-size:15px;
+}
+.profile-name{
+  font-size:12px;
+  max-width:110px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.profile-email{
+  font-size:10px;
+  color:var(--muted);
+}
+
+/* profile dropdown */
+.profile-menu{
+  position:absolute;
+  right:0;
+  top:115%;
+  background:var(--card-bg);
+  border-radius:10px;
+  box-shadow:0 14px 40px rgba(0,0,0,0.16);
+  min-width:180px;
+  padding:6px 0;
+  display:none;
+  z-index:1400;
+}
+.profile-menu button,
+.profile-menu a{
+  width:100%;
+  text-align:left;
+  background:transparent;
+  border:0;
+  padding:8px 12px;
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+.profile-menu button:hover,
+.profile-menu a:hover{
+  background:rgba(0,0,0,0.06);
+}
+
+/* Hero */
+.hero{
+  min-height:50vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding-top:80px;
+}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:46px;
+  font-weight:700;
+  line-height:1;
+}
+.hero-title .krishi{color:var(--accent-2)}
+.hero-title .connect{color:var(--accent)}
+.hero-sub{
+  font-size:17px;
+  margin-top:8px;
+  color:var(--muted);
+}
+
+/* Container */
+main.container{
+  max-width:1100px;
+  margin:90px auto 120px;
+  padding:0 16px;
+}
+section.block{
+  opacity:0;
+  transform:translateY(24px);
+  transition:all .6s ease-out;
+  margin-bottom:32px;
+  padding:16px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#fef9c3,#fcd34d,#bbf7d0);
+  box-shadow:0 10px 28px var(--shadow);
+}
+section.block.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+.card{
+  background:var(--card-bg);
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 8px 22px var(--shadow);
+}
+
+/* Titles */
+.section-title{
+  font-size:18px;
+  font-weight:800;
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.muted{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:6px;
+}
+ul{list-style:none;padding:0;margin:0}
+li.item{
+  background:#fff;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:8px;
+  border-left:6px solid var(--accent);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* Buttons */
+.refresh-btn{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+}
+.refresh-btn:hover{opacity:0.95}
+input,select,textarea{
+  padding:9px 10px;
+  border-radius:8px;
+  border:1px solid #cfcfcf;
+  font-size:14px;
+}
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea{
+  background:rgba(10,16,10,0.9);
+  color:var(--text);
+  border-color:#374151;
+}
+
+/* Map */
+#apmcMap{
+  height:360px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  margin-top:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.08);
+}
+
+/* Token progress bar */
+.token-bar-wrap{
+  height:14px;
+  border-radius:7px;
+  background:#e5f7df;
+  overflow:hidden;
+}
+.token-bar-inner{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#fcd34d,#22c55e);
+  transition:width .4s ease-out;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  background:#fef9c3;
+  color:#92400e;
+  margin-top:4px;
+}
+
+/* Products grid */
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+.product-card{
+  background:#fff;
+  border-radius:10px;
+  padding:8px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.08);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.product-card img{
+  width:100%;
+  height:110px;
+  object-fit:cover;
+  border-radius:8px;
+}
+.product-title{
+  font-size:13px;
+  font-weight:700;
+}
+.product-meta{
+  font-size:12px;
+  color:#4b5563;
+}
+
+/* Footer */
+footer{
+  background:linear-gradient(90deg,#fef9c3,#fcd34d);
+  padding:16px;
+  border-top-left-radius:12px;
+  border-top-right-radius:12px;
+  text-align:center;
+  font-size:13px;
+  color:#374151;
+  margin-top:18px;
+}
+
+/* Modals (news, agmarknet, farmer, market) */
+.modal-backdrop{
+  position:fixed;inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(12,20,8,0.35);
+  backdrop-filter: blur(4px);
+  z-index:1500;
+  padding:18px;
+}
+.modal-card{
+  width:100%;
+  max-width:1100px;
+  background:var(--card-bg);
+  border-radius:12px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.3);
+  overflow:hidden;
+}
+.modal-header{
+  display:flex;
+  align-items:center;
+  padding:10px 12px;
+  border-bottom:1px solid rgba(0,0,0,0.05);
+  gap:8px;
+}
+.modal-title{
+  font-weight:800;
+  color:var(--accent);
+  font-size:15px;
+}
+.modal-close{
+  margin-left:auto;
+  background:#dc2626;
+  color:#fff;
+  border:0;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.modal-lang-select{
+  border-radius:6px;
+  border:1px solid rgba(0,0,0,0.12);
+  padding:4px 8px;
+  font-size:12px;
+}
+.modal-body{
+  padding:10px;
+}
+.modal-iframe{
+  width:100%;
+  height:520px;
+  border:0;
+  border-radius:8px;
+}
+
+/* Responsive */
+@media(max-width:880px){
+  .hero-title{font-size:32px}
+  #apmcMap{height:300px}
+  nav.nav{font-size:12px}
+}
+@media(max-width:540px){
+  nav.nav a{display:none}
+  nav.nav a.active{display:inline-flex}
+}
+
+/* Dialogflow chatbot theme (green + yellow) */
+df-messenger {
+  --df-messenger-bot-message: #1e7f1e;              /* dark green bot messages */
+  --df-messenger-button-titlebar-color: #1e7f1e;    /* green header bar */
+  --df-messenger-chat-background-color: #fbffc9;    /* light yellow background */
+  --df-messenger-send-icon: #ffd700;                /* yellow send icon */
+  --df-messenger-user-message: #b7f777;             /* light green user bubble */
+}
+</style>
+
+<!-- Dialogflow Messenger Bootstrap -->
+<script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+
+</head>
+<body data-theme="light">
+
+<!-- =========================
+     NAVBAR
+     ========================= -->
+<div class="topbar">
+  <nav class="nav">
+    <div class="controls-left">
+      <div class="theme-toggle">
+        <button id="navThemeToggle" title="Toggle dark / light">🌙 / ☀️</button>
+      </div>
+      <select id="langSelect" class="lang-select" title="Language">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+    </div>
+
+    <a href="#home" class="active" data-i18n="nav.home">Home</a>
+    <a href="#news" data-i18n="nav.news">News</a>
+    <a href="#market" data-i18n="nav.market">Market</a>
+    <a href="#weather" data-i18n="nav.weather">Weather</a>
+    <a href="#apmc" data-i18n="nav.apmc">APMC</a>
+    <a href="#redeem" data-i18n="nav.tokens">Tokens</a>
+    <a href="#products" data-i18n="nav.products">Products</a>
+
+    <!-- Profile pill (right) -->
+    <div class="profile-pill" id="profilePill">
+      <div class="profile-avatar" id="profileAvatar">F</div>
+      <div>
+        <div class="profile-name" id="profileName">Farmer</div>
+        <div class="profile-email" id="profileEmail">Not logged in</div>
+      </div>
+      <div style="font-size:14px;">▾</div>
+      <div class="profile-menu" id="profileMenu">
+        <a href="profile.html"><span>👤</span><span data-i18n="profile.menu">Profile dashboard</span></a>
+        <button type="button" id="logoutBtn"><span>🚪</span><span data-i18n="profile.logout">Logout</span></button>
+        <a href="login.html"><span>🔑</span><span data-i18n="profile.login">Login / Signup</span></a>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- =========================
+     HERO
+     ========================= -->
+<header class="hero" id="home">
+  <h1 class="hero-title">
+    <span class="krishi" data-i18n="hero.krishi">🌾 KRISHI</span>
+    <span class="connect" data-i18n="hero.connect">CONNECT</span>
+  </h1>
+  <p class="hero-sub" data-i18n="hero.sub">
+    Empowering farmers with real-time insights & guidance 🌱🚜
+  </p>
+</header>
+
+<!-- =========================
+     MAIN CONTENT
+     ========================= -->
+<main class="container">
+
+  <!-- NEWS -->
+  <section id="news" class="block fade-up">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="section-title" data-i18n="news.title">📰 Latest Agriculture News</div>
+        <button class="refresh-btn" id="fetchNewsBtn" style="margin-left:auto" data-i18n="news.fetch">Refresh News</button>
+        <button class="refresh-btn" id="openNewsModalBtn" data-i18n="news.more">Open News Site</button>
+      </div>
+      <p class="muted" data-i18n="news.muted">Top headlines from agriculture feeds (click to open source)</p>
+      <ul id="newsList">
+        <li class="item" data-i18n="news.loading">Loading news...</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MARKET / MANDI RATES -->
+  <section id="market" class="block fade-up">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="section-title" data-i18n="market.title">📈 Market / Mandi Rates</div>
+        <button class="refresh-btn" id="fetchMarketBtn" style="margin-left:auto" data-i18n="market.refresh">Refresh</button>
+        <button class="refresh-btn" id="openAgmarknetModalBtn" data-i18n="market.openAg">Open Agmarknet</button>
+      </div>
+      <p class="muted" data-i18n="market.muted">
+        Live rates (best-effort demo). For detailed official data, open the Agmarknet portal.
+      </p>
+      <ul id="marketList">
+        <li class="item" data-i18n="market.loading">Loading market data...</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- WEATHER -->
+  <section id="weather" class="block fade-up">
+    <div class="card">
+      <div class="section-title" data-i18n="weather.title">🌤️ Weather</div>
+      <p class="muted" data-i18n="weather.muted">Check by city</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <input id="cityInput" placeholder="Enter city (e.g. Delhi)" data-i18n-placeholder="weather.cityPlaceholder">
+        <button class="refresh-btn" id="weatherCheckBtn" data-i18n="weather.check">Check</button>
+      </div>
+      <ul id="weatherList">
+        <li class="item" data-i18n="weather.loading">Loading weather...</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- APMC MAP -->
+  <section id="apmc" class="block fade-up">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="section-title" data-i18n="apmc.title">🗺️ Nearby APMC Map</div>
+        <button class="refresh-btn" id="locateBtn" style="margin-left:auto" data-i18n="apmc.refresh">Use Gadag Location</button>
+      </div>
+      <p class="muted" data-i18n="apmc.muted">
+        Map centers on Gadag (demo) and shows nearby major APMCs in Karnataka.
+      </p>
+      <div id="apmcMap"></div>
+      <div id="apmcResult" style="margin-top:10px;font-weight:700;color:var(--text)"></div>
+      <div id="apmcList" style="margin-top:8px;font-size:13px"></div>
+    </div>
+  </section>
+
+  <!-- TOKENS / REDEEM -->
+  <section id="redeem" class="block fade-up">
+    <div class="card">
+      <div class="section-title" data-i18n="redeem.title">🎁 Krishi Tokens Redeem</div>
+      <p class="muted" data-i18n="redeem.muted">
+        Tokens are based on your usage time on all Krishi Connect pages. (2 tokens per full minute + 10 tokens per visit day)
+      </p>
+      <div style="margin-top:8px;font-weight:700">
+        <span data-i18n="redeem.current">Current Tokens</span>:
+        <span id="tokenBalance">0</span>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="redeemItem" style="min-width:220px">
+          <option value="fert_small" data-cost="40">Fertilizer (small bag) — 40 tokens</option>
+          <option value="fert_big" data-cost="80">Fertilizer (big bag) — 80 tokens</option>
+          <option value="seed_kit" data-cost="60">Seed kit (vegetables) — 60 tokens</option>
+          <option value="sprayer" data-cost="120">Hand sprayer — 120 tokens</option>
+        </select>
+        <button class="refresh-btn" id="redeemBtn" data-i18n="redeem.btn">Redeem Now</button>
+        <button class="refresh-btn" id="goProfileBtn" data-i18n="redeem.profile">Open Profile Dashboard</button>
+        <button class="refresh-btn" id="openMarketRedeemBtn" data-i18n="redeem.marketBtn">Open External Agri Market</button>
+      </div>
+
+      <div class="token-progress" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span class="muted" style="margin:0;font-size:12px;" data-i18n="redeem.progressLabel">
+            Progress to next 100 tokens
+          </span>
+          <span id="progressNextLabel" style="font-size:12px;font-weight:600;color:var(--accent)"></span>
+        </div>
+        <div class="token-bar-wrap">
+          <div class="token-bar-inner" id="tokenBar"></div>
+        </div>
+        <div class="badge" id="tokenTierBadge">Seed Farmer 🌱</div>
+      </div>
+
+      <p class="muted" style="margin-top:8px" data-i18n="redeem.initialInfo">
+        In future, local cooperatives or agri-startups can plug-in as real token partners. This is a demo stored only in your browser.
+      </p>
+      <div id="redeemMsg" style="margin-top:8px;font-weight:700;color:var(--accent)"></div>
+    </div>
+  </section>
+
+  <!-- FARM PRODUCTS & MARKET LINKS (below token section) -->
+  <section id="products" class="block fade-up">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="section-title" data-i18n="products.title">🛒 Farm Products & Market Links</div>
+        <button class="refresh-btn" id="refreshProductsBtn" style="margin-left:auto" data-i18n="products.refresh">Refresh List</button>
+      </div>
+      <p class="muted" data-i18n="products.muted">
+        Demo list of seeds & fertilizers (static). Click on any product to open external site. Use the button below to open a full external marketplace or sell portal.
+      </p>
+
+      <div id="productsGrid" class="products-grid"></div>
+
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="refresh-btn" id="openExternalMarketModalBtn" data-i18n="products.openMarketPopup">
+          Open External Agri Market (Popup)
+        </button>
+        <button class="refresh-btn" id="openSellPortalBtn" data-i18n="products.openSellPortal">
+          Sell crops / products (New Tab)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HELPLINE -->
+  <section id="helpline" class="block fade-up">
+    <div class="card">
+      <div class="section-title" data-i18n="helpline.title">📞 Farmer Helpline</div>
+      <ul style="margin-top:8px">
+        <li class="item"><a href="tel:18001801551">📱 <span data-i18n="helpline.kisan">Kisan Call Center:</span> 1800-180-1551</a></li>
+        <li class="item"><a href="mailto:kisanhelp@nic.in">📧 <span data-i18n="helpline.email">Email:</span> kisanhelp@nic.in</a></li>
+        <li class="item"><a href="https://farmer.gov.in" target="_blank">🌐 <span data-i18n="helpline.portal">Farmer Portal:</span> farmer.gov.in</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FEEDBACK (simple version, no admin panel) -->
+  <section id="help" class="block fade-up">
+    <div class="card">
+      <div class="section-title" data-i18n="help.title">📬 Feedback & Support</div>
+      <p class="muted" data-i18n="help.muted">
+        Tell us how we can improve — this will open your mail app to send feedback to <strong>shivaganesh00004@gmail.com</strong>.
+      </p>
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <input id="fbName" placeholder="Your name" data-i18n-placeholder="help.name"><br><br>
+          <input id="fbPhone" placeholder="Phone" data-i18n-placeholder="help.phone"><br><br>
+          <input id="fbEmail" placeholder="Email" data-i18n-placeholder="help.email"><br><br>
+        </div>
+        <div>
+          <textarea id="fbMessage" placeholder="Message / issue" rows="6" data-i18n-placeholder="help.message"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="refresh-btn" id="submitFeedbackBtn" data-i18n="help.send">Send Feedback (Mail)</button>
+        <button class="refresh-btn" id="clearFeedbackBtn" data-i18n="help.clear">Clear</button>
+      </div>
+      <div id="feedbackMsg" style="margin-top:10px;font-weight:700;color:var(--accent)"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div data-i18n="footer.text">© 2025 Krishi Connect | Grounded in Earth, Growing Forward</div>
+</footer>
+
+<!-- =========================
+     MODALS (NEWS, AGMARKNET, FARMER, MARKET)
+     ========================= -->
+
+<!-- NEWS modal -->
+<div class="modal-backdrop" id="newsModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="news.modalTitle">More Agri News — AgriculturePost</div>
+      <select class="modal-lang-select" id="newsLangSelect">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button class="modal-close" id="closeNewsModalBtn" data-i18n="modal.close">Close</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="newsIframe" class="modal-iframe" src="https://agriculturepost.com/" title="News"></iframe>
+      <p class="muted" style="margin-top:6px;font-size:12px;" data-i18n="modal.translateNote">
+        To read this site in your language, choose a language above — a translated version will open in a new tab using Google Translate.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- AGMARKNET modal -->
+<div class="modal-backdrop" id="agmarknetModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="ag.title">Agmarknet — Official Market Portal</div>
+      <select class="modal-lang-select" id="agLangSelect">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button class="modal-close" id="closeAgmarknetBtn" data-i18n="modal.close">Close</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="agIframe" class="modal-iframe" src="https://agmarknet.gov.in/" title="Agmarknet"></iframe>
+      <p class="muted" style="margin-top:6px;font-size:12px;" data-i18n="modal.translateNote">
+        Use the language dropdown to open Agmarknet translated in a new tab via Google Translate.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- FARMER PORTAL modal (for sell portal from products section if needed) -->
+<div class="modal-backdrop" id="marketRedeemModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="marketRedeem.title">External Agri Market — Seed/Fertilizer Store</div>
+      <select class="modal-lang-select" id="marketRedeemLangSelect">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button class="modal-close" id="closeMarketRedeemBtn" data-i18n="modal.close">Close</button>
+    </div>
+    <div class="modal-body">
+      <!-- Example: generic marketplace search page -->
+      <iframe id="marketRedeemIframe" class="modal-iframe" src="https://www.amazon.in/s?k=fertilizer+seeds" title="Agri Market"></iframe>
+      <p class="muted" style="margin-top:6px;font-size:12px;" data-i18n="modal.translateNote">
+        Use the dropdown to open a translated version (new tab).
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- External MARKET popup from products section -->
+<div class="modal-backdrop" id="externalMarketModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="products.modalTitle">External Marketplace — Seeds & Fertilizers</div>
+      <select class="modal-lang-select" id="extMarketLangSelect">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="kn">ಕನ್ನಡ</option>
+      </select>
+      <button class="modal-close" id="closeExternalMarketBtn" data-i18n="modal.close">Close</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="externalMarketIframe" class="modal-iframe" src="https://www.indiamart.com/search.mp?ss=agriculture%20fertilizer" title="External Market"></iframe>
+      <p class="muted" style="margin-top:6px;font-size:12px;" data-i18n="modal.translateNote">
+        Choose a language above to open a translated version in a new tab.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+/* ============================================================
+   SIMPLE HELPERS
+   ============================================================ */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+/* usage tracking (shared across pages) */
+let pageStart = Date.now();
+function updateUsage(deltaMs){
+  if(deltaMs <= 0) return;
+  try{
+    let total = parseInt(localStorage.getItem('krishiUsageMs') || '0', 10);
+    if(isNaN(total) || total < 0) total = 0;
+    total += deltaMs;
+    localStorage.setItem('krishiUsageMs', String(total));
+
+    const today = new Date().toISOString().slice(0,10);
+    let days = [];
+    try{
+      days = JSON.parse(localStorage.getItem('krishiVisitDays') || '[]');
+      if(!Array.isArray(days)) days = [];
+    }catch(e){ days = []; }
+    if(!days.includes(today)){
+      days.push(today);
+      localStorage.setItem('krishiVisitDays', JSON.stringify(days));
+    }
+  }catch(e){}
+}
+window.addEventListener('beforeunload', ()=>{
+  const delta = Date.now() - pageStart;
+  updateUsage(delta);
+});
+
+/* ============================================================
+   THEME + I18N
+   ============================================================ */
+const themeBtn = document.getElementById('navThemeToggle');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  try{ localStorage.setItem('krishi_theme', theme); }catch(e){}
+}
+(function initTheme(){
+  try{
+    const t = localStorage.getItem('krishi_theme') || 'light';
+    applyTheme(t);
+  }catch(e){
+    applyTheme('light');
+  }
+})();
+themeBtn.addEventListener('click', ()=>{
+  const cur = document.body.getAttribute('data-theme') || 'light';
+  applyTheme(cur === 'light' ? 'dark' : 'light');
+});
+
+/* translations (shortened but enough for this page) */
+const i18n = {
+  en:{
+    'nav.home':'Home','nav.news':'News','nav.market':'Market','nav.weather':'Weather','nav.apmc':'APMC','nav.tokens':'Tokens','nav.products':'Products',
+    'hero.krishi':'🌾 KRISHI','hero.connect':'CONNECT','hero.sub':'Empowering farmers with real-time insights & guidance 🌱🚜',
+    'news.title':'📰 Latest Agriculture News','news.fetch':'Refresh News','news.more':'Open News Site','news.muted':'Top headlines from agriculture feeds (click to open source)','news.loading':'Loading news...','news.modalTitle':'More Agri News — AgriculturePost',
+    'market.title':'📈 Market / Mandi Rates','market.refresh':'Refresh','market.openAg':'Open Agmarknet','market.muted':'Live rates (best-effort demo). For detailed official data, open the Agmarknet portal.','market.loading':'Loading market data...',
+    'weather.title':'🌤️ Weather','weather.muted':'Check by city','weather.cityPlaceholder':'Enter city (e.g. Delhi)','weather.check':'Check','weather.loading':'Loading weather...','weather.cityNotFound':'City not found','weather.error':'Error fetching weather',
+    'apmc.title':'🗺️ Nearby APMC Map','apmc.refresh':'Use Gadag Location','apmc.muted':'Map centers on Gadag (demo) and shows nearby major APMCs in Karnataka.','apmc.locating':'Centering on Gadag...','apmc.centered':'Using Gadag as current location',
+    'redeem.title':'🎁 Krishi Tokens Redeem','redeem.muted':'Tokens are based on your usage time on all Krishi Connect pages. (2 tokens per full minute + 10 tokens per visit day)','redeem.current':'Current Tokens','redeem.btn':'Redeem Now','redeem.profile':'Open Profile Dashboard','redeem.marketBtn':'Open External Agri Market','redeem.noTokens':'No tokens available.','redeem.notEnough':'Not enough tokens to redeem this item.','redeem.success':'Redeemed successfully:','redeem.initialInfo':'In future, local cooperatives or agri-startups can plug-in as real token partners. This is a demo stored only in your browser.','redeem.progressLabel':'Progress to next 100 tokens',
+    'products.title':'🛒 Farm Products & Market Links','products.refresh':'Refresh List','products.muted':'Demo list of seeds & fertilizers (static). Click to open external site.','products.openMarketPopup':'Open External Agri Market (Popup)','products.openSellPortal':'Sell crops / products (New Tab)','products.modalTitle':'External Marketplace — Seeds & Fertilizers',
+    'helpline.title':'📞 Farmer Helpline','helpline.kisan':'Kisan Call Center:','helpline.email':'Email:','helpline.portal':'Farmer Portal:',
+    'help.title':'📬 Feedback & Support','help.muted':'Tell us how we can improve — this will open your mail app to send feedback to <strong>shivaganesh00004@gmail.com</strong>.','help.name':'Your name','help.phone':'Phone','help.email':'Email','help.message':'Message / issue','help.send':'Send Feedback (Mail)','help.clear':'Clear','help.fill':'Please provide name and message.','help.sent':'Opening mail app...',
+    'footer.text':'© 2025 Krishi Connect | Grounded in Earth, Growing Forward',
+    'profile.menu':'Profile dashboard','profile.logout':'Logout','profile.login':'Login / Signup',
+    'modal.close':'Close','modal.translateNote':'To read this site in your language, choose a language above — a translated version will open in a new tab using Google Translate.',
+    'marketRedeem.title':'External Agri Market — Seed/Fertilizer Store'
+  },
+  hi:{
+    'nav.home':'होम','nav.news':'समाचार','nav.market':'बाज़ार','nav.weather':'मौसम','nav.apmc':'एपीएमसी','nav.tokens':'टोकन','nav.products':'उत्पाद',
+    'hero.krishi':'🌾 कृषी','hero.connect':'कनेक्ट','hero.sub':'किसानों को वास्तविक समय की जानकारी व मार्गदर्शन 🌱🚜',
+    'news.title':'📰 ताज़ा कृषि समाचार','news.fetch':'समाचार रीफ़्रेश','news.more':'समाचार साइट खोलें','news.muted':'कृषि फ़ीड से शीर्ष समाचार (स्रोत खोलने के लिए क्लिक करें)','news.loading':'समाचार लोड हो रहा है...','news.modalTitle':'अधिक कृषि समाचार — AgriculturePost',
+    'market.title':'📈 मंडी / बाज़ार दरें','market.refresh':'रीफ़्रेश','market.openAg':'Agmarknet खोलें','market.muted':'लाइव दरें (डेमो). आधिकारिक डेटा के लिए Agmarknet पोर्टल खोलें।','market.loading':'बाज़ार डेटा लोड हो रहा है...',
+    'weather.title':'🌤️ मौसम','weather.muted':'शहर से जाँच करें','weather.cityPlaceholder':'शहर दर्ज करें (जैसे दिल्ली)','weather.check':'जाँच','weather.loading':'मौसम लोड हो रहा है...','weather.cityNotFound':'शहर नहीं मिला','weather.error':'मौसम डेटा लाने में त्रुटि',
+    'apmc.title':'🗺️ नज़दीकी एपीएमसी मानचित्र','apmc.refresh':'गदग स्थान का उपयोग करें','apmc.muted':'नक्शा डेमो के लिए गदग पर केंद्रित है और आसपास के प्रमुख एपीएमसी दिखाता है।','apmc.locating':'गदग पर केंद्रित किया जा रहा है...','apmc.centered':'गदग को वर्तमान स्थान माना गया है',
+    'redeem.title':'🎁 कृषी टोकन रिडीम','redeem.muted':'आपके Krishi Connect उपयोग समय से टोकन बनते हैं (2 टोकन प्रति मिनट + 10 टोकन प्रति दिन)।','redeem.current':'वर्तमान टोकन','redeem.btn':'अभी रिडीम करें','redeem.profile':'प्रोफ़ाइल डैशबोर्ड खोलें','redeem.marketBtn':'बाहरी कृषि बाज़ार खोलें','redeem.noTokens':'कोई टोकन उपलब्ध नहीं।','redeem.notEnough':'इस वस्तु के लिए पर्याप्त टोकन नहीं हैं।','redeem.success':'सफलतापूर्वक रिडीम किया गया:','redeem.initialInfo':'भविष्य में वास्तविक साझेदार जोड़े जा सकते हैं — अभी यह केवल डेमो है और ब्राउज़र में सहेजा जाता है।','redeem.progressLabel':'अगले 100 टोकन की प्रगति',
+    'products.title':'🛒 कृषि उत्पाद व बाज़ार लिंक','products.refresh':'सूची रीफ़्रेश','products.muted':'बीज और उर्वरक (डेमो) — उत्पाद पर क्लिक करें।','products.openMarketPopup':'बाहरी कृषि बाज़ार (पॉपअप)','products.openSellPortal':'फसल / उत्पाद बेचें (नया टैब)','products.modalTitle':'बाहरी मार्केटप्लेस — बीज व उर्वरक',
+    'helpline.title':'📞 किसान हेल्पलाइन','helpline.kisan':'किसान कॉल सेंटर:','helpline.email':'ईमेल:','helpline.portal':'किसान पोर्टल:',
+    'help.title':'📬 प्रतिक्रिया व सहायता','help.muted':'हमें बताएं कि हम कैसे सुधार सकते हैं — यह आपकी मेल ऐप खोल कर <strong>shivaganesh00004@gmail.com</strong> पर भेजेगा।','help.name':'आपका नाम','help.phone':'फ़ोन','help.email':'ईमेल','help.message':'संदेश / समस्या','help.send':'प्रतिक्रिया भेजें (मेल)','help.clear':'साफ़ करें','help.fill':'कृपया नाम और संदेश दें।','help.sent':'मेल ऐप खुल रहा है...',
+    'footer.text':'© 2025 Krishi Connect | जमीन से जुड़े, आगे बढ़ते हुए',
+    'profile.menu':'प्रोफ़ाइल डैशबोर्ड','profile.logout':'लॉगआउट','profile.login':'लॉगिन / साइनअप',
+    'modal.close':'बंद करें','modal.translateNote':'भाषा चुनने पर यह साइट Google Translate के माध्यम से नए टैब में खुलेगी।',
+    'marketRedeem.title':'बाहरी कृषि बाज़ार — बीज/उर्वरक स्टोर'
+  },
+  kn:{
+    'nav.home':'ಮುಖಪುಟ','nav.news':'ಸುದ್ದಿ','nav.market':'ಮಾರುಕಟ್ಟೆ','nav.weather':'ಹವಾಮಾನ','nav.apmc':'ಎಪಿಎಂಸಿ','nav.tokens':'ಟೋಕನ್‌ಗಳು','nav.products':'ಉತ್ಪನ್ನಗಳು',
+    'hero.krishi':'🌾 ಕೃಷಿ','hero.connect':'ಕನೆಕ್ಟ್','hero.sub':'ಕೃಷಿಕರಿಗೆ ತ್ವರಿತ ಮಾಹಿತಿ ಮತ್ತು ಮಾರ್ಗದರ್ಶನ 🌱🚜',
+    'news.title':'📰 ತಾಜಾ ಕೃಷಿ ಸುದ್ದಿ','news.fetch':'ಸುದ್ದಿ تازهಗೊಳಿಸಿ','news.more':'ಸುದ್ದಿ ಸೈಟ್ ತೆರೆಯಿರಿ','news.muted':'ಕೃಷಿ ಫೀಡ್‌ಗಳಿಂದ ಪ್ರಮುಖ ಸುದ್ದಿ (ಕ್ಲಿಕ್ ಮಾಡಿ)','news.loading':'ಸುದ್ದಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ...','news.modalTitle':'ಹೆಚ್ಚಿನ ಕೃಷಿ ಸುದ್ದಿ — AgriculturePost',
+    'market.title':'📈 ಮಾರುಕಟ್ಟೆ/ಮಂಡಿ ದರಗಳು','market.refresh':'ರಿಫ್ರೆಶ್','market.openAg':'Agmarknet ತೆರೆಯಿರಿ','market.muted':'ಲೈವ್ ದರಗಳು (ಡೆಮೊ). ಅಧಿಕೃತ ಮಾಹಿತಿಗೆ Agmarknet ಪೋರ್ಟಲ್ ಬಳಸಿ.','market.loading':'ಮಾರುಕಟ್ಟೆ ಡೇಟಾ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+    'weather.title':'🌤️ ಹವಾಮಾನ','weather.muted':'ನಗರ ಆಧಾರಿತ ಪರಿಶೀಲನೆ','weather.cityPlaceholder':'ನಗರ ನಮೂದಿಸಿ (ಉದಾ: Delhi)','weather.check':'ಪರಿಶೀಲಿಸಿ','weather.loading':'ಹವಾಮಾನ ಲೋಡ್ ಆಗುತ್ತಿದೆ...','weather.cityNotFound':'ನಗರ ಸಿಗಲಿಲ್ಲ','weather.error':'ಹವಾಮಾನ ಮಾಹಿತಿಯನ್ನು ತರಲು ದೋಷ',
+    'apmc.title':'🗺️ ಸಮೀಪದ ಎಪಿಎಂಸಿ ನಕ್ಷೆ','apmc.refresh':'ಗದಗ ಸ್ಥಾನ ಬಳಸಿರಿ','apmc.muted':'ಡೆಮೊಗಾಗಿ ನಕ್ಷೆ ಗದಗ ಮೇಲೆ ಕೇಂದ್ರೀಕೃತವಾಗಿರುತ್ತದೆ ಮತ್ತು ಸುತ್ತಲಿನ ಪ್ರಮುಖ ಎಪಿಎಂಸಿಗಳನ್ನು ತೋರಿಸುತ್ತದೆ.','apmc.locating':'ಗದಗ ಮೇಲೆ ಕೇಂದ್ರೀಕರಿಸಲಾಗುತ್ತಿದೆ...','apmc.centered':'ಗದಗ ಅನ್ನು ಪ್ರಸ್ತುತ ಸ್ಥಳವಾಗಿ ಬಳಸಲಾಗುತ್ತಿದೆ',
+    'redeem.title':'🎁 ಕೃಷಿ ಟೋಕನ್ ರಿಡೀಮ್','redeem.muted':'Krishi Connect ಬಳಕೆ ಸಮಯದ ಮೇಲೆ ಟೋಕನ್‌ಗಳು ನಿರ್ಮಾಣವಾಗುತ್ತವೆ (ಪ್ರತಿ ನಿಮಿಷಕ್ಕೆ 2 ಟೋಕನ್ + ದಿನಕ್ಕೆ 10 ಟೋಕನ್).','redeem.current':'ಪ್ರಸ್ತುತ ಟೋಕನ್‌ಗಳು','redeem.btn':'ಈಗ ರಿಡೀಮ್ ಮಾಡಿ','redeem.profile':'ಪ್ರೊಫೈಲ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆಯಿರಿ','redeem.marketBtn':'ಹೊರಗಿನ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ ತೆರೆಯಿರಿ','redeem.noTokens':'ಯಾವುದೇ ಟೋಕನ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ.','redeem.notEnough':'ಈ ಐಟಂಗೆ ಸಾಕಷ್ಟು ಟೋಕನ್‌ಗಳು ಇಲ್ಲ.','redeem.success':'ಯಶಸ್ವಿಯಾಗಿ ರಿಡೀಮ್ ಮಾಡಲಾಗಿದೆ:','redeem.initialInfo':'ಭವಿಷ್ಯದಲ್ಲಿ ನಿಜವಾದ ಪಾಲುದಾರರನ್ನು ಜೋಡಿಸಬಹುದು — ಈಗ ಇದು ಕೇವಲ ಡೆಮೊ (ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಮಾತ್ರ).','redeem.progressLabel':'ಮುಂದಿನ 100 ಟೋಕನ್‌ಗಳ ಪ್ರಗತಿ',
+    'products.title':'🛒 ಕೃಷಿ ಉತ್ಪನ್ನಗಳು ಮತ್ತು ಮಾರುಕಟ್ಟೆ ಲಿಂಕ್‌ಗಳು','products.refresh':'ಪಟ್ಟಿ ರಿಫ್ರೆಶ್','products.muted':'ಬೀಜ ಮತ್ತು ಗೊಬ್ಬರಗಳ ಡೆಮೊ ಪಟ್ಟಿ — ಉತ್ಪನ್ನದ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ.','products.openMarketPopup':'ಹೊರಗಿನ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ (ಪಾಪ್ಅಪ್)','products.openSellPortal':'ಬೆಳೆ / ಉತ್ಪನ್ನ ಮಾರಾಟ (ಹೊಸ ಟ್ಯಾಬ್)','products.modalTitle':'ಹೊರಗಿನ ಮಾರ್ಕೆಟ್‌ಪ್ಲೇಸ್ — ಬೀಜ/ಗೊಬ್ಬರ',
+    'helpline.title':'📞 ರೈತ ಸಹಾಯವಾಣಿ','helpline.kisan':'ಕಿಸಾನ್ ಕಾಲ್ ಸೆಂಟರ್:','helpline.email':'ಇ-ಮೇಲ್:','helpline.portal':'ರೈತ ಪೋರ್ಟಲ್:',
+    'help.title':'📬 ಪ್ರತಿಕ್ರಿಯೆ ಮತ್ತು ಬೆಂಬಲ','help.muted':'ನಾವು ಹೇಗೆ ಸುಧಾರಿಸಬಹುದು ಎಂದು ತಿಳಿಸಿ — ಇದು ನಿಮ್ಮ ಮೇಲ್ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯುತ್ತದೆ ಮತ್ತು <strong>shivaganesh00004@gmail.com</strong> ಗೆ ಕಳುಹಿಸುತ್ತದೆ.','help.name':'ನಿಮ್ಮ ಹೆಸರು','help.phone':'ಫೋನ್','help.email':'ಇ-ಮೇಲ್','help.message':'ಸಂದೇಶ / ಸಮಸ್ಯೆ','help.send':'ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ (ಮೇಲ್)','help.clear':'ಕ್ಲಿಯರ್','help.fill':'ದಯವಿಟ್ಟು ಹೆಸರು ಮತ್ತು ಸಂದೇಶ ನಮೂದಿಸಿ.','help.sent':'ಮೇಲ್ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆದಿದೆ...',
+    'footer.text':'© 2025 Krishi Connect | ನೆಲದಲ್ಲಿ ಬೇರೂರಿ, ಮುಂದಕ್ಕೆ ಬೆಳೆದುಹೋಗೋಣ',
+    'profile.menu':'ಪ್ರೊಫೈಲ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್','profile.logout':'ಲಾಗ್‌ಔಟ್','profile.login':'ಲಾಗಿನ್ / ಸೈನ್-ಅಪ್',
+    'modal.close':'ಮುಚ್ಚು','modal.translateNote':'ಭಾಷೆ ಆಯ್ಕೆ ಮಾಡಿದಾಗ, Google Translate ಮೂಲಕ ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಈ ಸೈಟ್ ತೆರೆದುಕೊಳ್ಳುತ್ತದೆ.',
+    'marketRedeem.title':'ಹೊರಗಿನ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ — ಬೀಜ/ಗೊಬ್ಬರ ದುಕಾಣ'
+  }
+};
+
+let currentLang = (function(){
+  try{ return localStorage.getItem('krishi_lang') || 'en'; }catch(e){ return 'en'; }
+})();
+const langSelect = document.getElementById('langSelect');
+
+function applyTranslations(lang){
+  if(!i18n[lang]) lang = 'en';
+  currentLang = lang;
+  try{ localStorage.setItem('krishi_lang', lang); }catch(e){}
+  const dict = i18n[lang];
+
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(dict[key] !== undefined){
+      const val = dict[key];
+      if(typeof val === 'string' && val.includes('<')) el.innerHTML = val;
+      else el.textContent = val;
+    }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(inp=>{
+    const key = inp.getAttribute('data-i18n-placeholder');
+    if(dict[key] !== undefined){
+      inp.setAttribute('placeholder', dict[key]);
+    }
+  });
+  langSelect.value = lang;
+}
+langSelect.addEventListener('change', ()=>applyTranslations(langSelect.value));
+applyTranslations(currentLang);
+
+/* helper for translated URLs (new tab only) */
+function buildTranslateUrl(originalUrl, lang){
+  if(lang === 'hi') return 'https://translate.google.com/translate?sl=auto&tl=hi&u='+encodeURIComponent(originalUrl);
+  if(lang === 'kn') return 'https://translate.google.com/translate?sl=auto&tl=kn&u='+encodeURIComponent(originalUrl);
+  return originalUrl;
+}
+
+/* ============================================================
+   PROFILE AVATAR / AUTH USER FROM localStorage.krishiAuthUser
+   ============================================================ */
+function loadAuthUser(){
+  let u = null;
+  try{
+    u = JSON.parse(localStorage.getItem('krishiAuthUser') || 'null');
+  }catch(e){ u = null; }
+  const avatarEl = document.getElementById('profileAvatar');
+  const nameEl = document.getElementById('profileName');
+  const emailEl = document.getElementById('profileEmail');
+
+  if(u && u.email){
+    const name = u.displayName || (u.email.split('@')[0]);
+    nameEl.textContent = name;
+    emailEl.textContent = u.email;
+    avatarEl.textContent = (name[0] || 'F').toUpperCase();
+  }else{
+    nameEl.textContent = 'Guest';
+    emailEl.textContent = 'Not logged in';
+    avatarEl.textContent = 'G';
+  }
+}
+loadAuthUser();
+
+/* profile dropdown behaviour */
+const profilePill = document.getElementById('profilePill');
+const profileMenu = document.getElementById('profileMenu');
+profilePill.addEventListener('click', ()=>{
+  const visible = profileMenu.style.display === 'block';
+  profileMenu.style.display = visible ? 'none' : 'block';
+});
+document.addEventListener('click', (e)=>{
+  if(!profilePill.contains(e.target)){
+    profileMenu.style.display = 'none';
+  }
+});
+
+/* logout */
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('krishiAuthUser'); }catch(e){}
+  loadAuthUser();
+  window.location.href = 'login.html';
+});
+
+/* ============================================================
+   NAV SMOOTH SCROLL
+   ============================================================ */
+document.querySelectorAll('nav.nav a').forEach(a=>{
+  a.addEventListener('click', e=>{
+    const href = a.getAttribute('href');
+    if(href && href.startsWith('#')){
+      e.preventDefault();
+      document.querySelectorAll('nav.nav a').forEach(x=>x.classList.remove('active'));
+      a.classList.add('active');
+      const id = href.substring(1);
+      const el = document.getElementById(id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+});
+
+/* fade-in sections */
+const fadeItems = document.querySelectorAll('.block');
+const fadeIo = new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      en.target.classList.add('visible');
+      fadeIo.unobserve(en.target);
+    }
+  });
+},{threshold:0.2});
+fadeItems.forEach(it=>fadeIo.observe(it));
+
+/* ============================================================
+   NEWS VIA RSS (AllOrigins)
+   ============================================================ */
+const newsFeeds = [
+  'https://www.agriculture.com/feed',
+  'https://www.farmprogress.com/feed',
+  'https://agriculturepost.com/feed'
+];
+
+async function fetchRssViaAllOrigins(url){
+  const proxy = 'https://api.allorigins.win/raw?url=';
+  const res = await fetch(proxy + encodeURIComponent(url));
+  if(!res.ok) throw new Error('RSS fetch failed');
+  return res.text();
+}
+function parseRssXml(xmlString){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlString, 'application/xml');
+  const items = Array.from(doc.querySelectorAll('item')).map(it=>({
+    title: it.querySelector('title')?it.querySelector('title').textContent:'Untitled',
+    link: it.querySelector('link')?it.querySelector('link').textContent:'#',
+    pubDate: it.querySelector('pubDate')?new Date(it.querySelector('pubDate').textContent):null
+  }));
+  return items;
+}
+async function loadNews(){
+  const listEl = document.getElementById('newsList');
+  listEl.innerHTML = `<li class="item">${escapeHtml(i18n[currentLang]['news.loading']||'Loading news...')}</li>`;
+  let collected = [];
+  for(const feed of newsFeeds){
+    try{
+      const xml = await fetchRssViaAllOrigins(feed);
+      const items = parseRssXml(xml);
+      collected = collected.concat(items);
+    }catch(e){ console.warn('RSS fail', feed, e); }
+  }
+  collected = collected.filter(i=>i.link).sort((a,b)=>(b.pubDate?b.pubDate.getTime():0)-(a.pubDate?a.pubDate.getTime():0)).slice(0,5);
+  if(!collected.length){
+    listEl.innerHTML = `<li class="item">Could not load live news. Please open full news site.</li>`;
+    return;
+  }
+  listEl.innerHTML = '';
+  collected.forEach(it=>{
+    const li = document.createElement('li');
+    li.className='item';
+    li.innerHTML = `<a href="${it.link}" target="_blank" rel="noopener">${escapeHtml(it.title)}${it.pubDate?` <small style="color:#6b7280">— ${it.pubDate.toDateString()}</small>`:''}</a>`;
+    listEl.appendChild(li);
+  });
+}
+document.getElementById('fetchNewsBtn').addEventListener('click', loadNews);
+
+/* News modal */
+const newsModal = document.getElementById('newsModal');
+document.getElementById('openNewsModalBtn').addEventListener('click', ()=>{
+  newsModal.style.display='flex';
+  document.getElementById('newsIframe').src = 'https://agriculturepost.com/';
+});
+document.getElementById('closeNewsModalBtn').addEventListener('click', ()=>{
+  newsModal.style.display='none';
+});
+document.getElementById('newsLangSelect').addEventListener('change', (e)=>{
+  const lang = e.target.value;
+  const url = buildTranslateUrl('https://agriculturepost.com/', lang);
+  window.open(url, '_blank');
+});
+
+/* ============================================================
+   MARKET (simple demo + fallback)
+   ============================================================ */
+async function loadMarket(){
+  const list = document.getElementById('marketList');
+  list.innerHTML = `<li class="item">${escapeHtml(i18n[currentLang]['market.loading']||'Loading market data...')}</li>`;
+  try{
+    // simple fallback dataset – static demo
+    const fallback = [
+      {commodity:'Wheat',market:'Delhi',state:'Delhi',modal_price:2300},
+      {commodity:'Rice',market:'Bangalore',state:'Karnataka',modal_price:2800},
+      {commodity:'Maize',market:'Pune',state:'Maharashtra',modal_price:1950},
+      {commodity:'Cotton',market:'Gujarat',state:'Gujarat',modal_price:4200},
+      {commodity:'Tomato',market:'Hyderabad',state:'Telangana',modal_price:2200}
+    ];
+    list.innerHTML = '';
+    fallback.forEach(r=>{
+      const li = document.createElement('li'); li.className='item';
+      li.innerHTML = `<strong>${r.commodity}</strong> (${r.market}, ${r.state}) — ₹${r.modal_price}/quintal`;
+      list.appendChild(li);
+    });
+  }catch(e){
+    console.error(e);
+    list.innerHTML = `<li class="item">Could not load market data.</li>`;
+  }
+}
+document.getElementById('fetchMarketBtn').addEventListener('click', loadMarket);
+
+/* Agmarknet modal */
+const agModal = document.getElementById('agmarknetModal');
+document.getElementById('openAgmarknetModalBtn').addEventListener('click', ()=>{
+  agModal.style.display='flex';
+  document.getElementById('agIframe').src = 'https://agmarknet.gov.in/';
+});
+document.getElementById('closeAgmarknetBtn').addEventListener('click', ()=>{
+  agModal.style.display='none';
+});
+document.getElementById('agLangSelect').addEventListener('change', (e)=>{
+  const lang = e.target.value;
+  const url = buildTranslateUrl('https://agmarknet.gov.in/', lang);
+  window.open(url,'_blank');
+});
+
+/* ============================================================
+   WEATHER (Nominatim + Open-Meteo)
+   ============================================================ */
+async function loadWeatherByCity(city){
+  const listEl = document.getElementById('weatherList');
+  listEl.innerHTML = `<li class="item">${escapeHtml(i18n[currentLang]['weather.loading']||'Loading weather...')}</li>`;
+  try{
+    const geo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`).then(r=>r.json());
+    if(!geo[0]){
+      listEl.innerHTML = `<li class="item">${escapeHtml(i18n[currentLang]['weather.cityNotFound']||'City not found')}</li>`;
+      return;
+    }
+    const lat = geo[0].lat, lon = geo[0].lon;
+    const wres = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia/Kolkata`).then(r=>r.json());
+    const cw = wres.current_weather;
+    if(!cw) throw 'No weather';
+    const desc = weatherDesc(cw.weathercode);
+    listEl.innerHTML = `
+      <li class="item"><strong>${escapeHtml(city)}</strong></li>
+      <li class="item"><strong>Temperature:</strong> ${cw.temperature} °C</li>
+      <li class="item"><strong>Wind:</strong> ${cw.windspeed} km/h</li>
+      <li class="item"><strong>Condition:</strong> ${escapeHtml(desc)}</li>
+    `;
+  }catch(err){
+    console.error(err);
+    listEl.innerHTML = `<li class="item">${escapeHtml(i18n[currentLang]['weather.error']||'Error fetching weather')}</li>`;
+  }
+}
+function weatherDesc(code){
+  const map={0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',80:'Rain showers',95:'Thunderstorm'};
+  return map[code]||'Unknown';
+}
+document.getElementById('weatherCheckBtn').addEventListener('click', ()=>{
+  const c = document.getElementById('cityInput').value.trim();
+  if(!c){
+    alert(i18n[currentLang]['weather.cityPlaceholder']||'Enter city');
+    return;
+  }
+  loadWeatherByCity(c);
+});
+
+/* ============================================================
+   APMC MAP (Leaflet, static dataset around Gadag)
+   ============================================================ */
+let apmcMap = null;
+let apmcMarkers = [];
+
+const apmcDataset = [
+  {name:'Gadag APMC', lat:15.4290, lon:75.6329, city:'Gadag'},
+  {name:'Hubli-Dharwad APMC', lat:15.3647, lon:75.1234, city:'Hubli-Dharwad'},
+  {name:'Bagalkot APMC', lat:16.1776, lon:75.7164, city:'Bagalkot'},
+  {name:'Haveri APMC', lat:14.7970, lon:75.4045, city:'Haveri'},
+  {name:'Belgaum APMC', lat:15.8552, lon:74.5006, city:'Belgaum'},
+  {name:'Vijayapura APMC', lat:16.8300, lon:75.7106, city:'Vijayapura'},
+  {name:'Davanagere APMC', lat:14.4644, lon:75.9218, city:'Davanagere'}
+];
+
+function initApmcMap(){
+  if(apmcMap) return;
+  apmcMap = L.map('apmcMap');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(apmcMap);
+  apmcMap.setView([15.4290,75.6329],8);
+}
+function showApmcAroundGadag(){
+  initApmcMap();
+  const resDiv = document.getElementById('apmcResult');
+  const listDiv = document.getElementById('apmcList');
+  resDiv.textContent = i18n[currentLang]['apmc.locating']||'Centering on Gadag...';
+  apmcMarkers.forEach(m=>apmcMap.removeLayer(m));
+  apmcMarkers = [];
+  const center=[15.4290,75.6329];
+  apmcMap.setView(center,9);
+  const gadagMarker = L.marker(center).addTo(apmcMap).bindPopup('Gadag (demo)').openPopup();
+  apmcMarkers.push(gadagMarker);
+  listDiv.innerHTML='';
+  apmcDataset.forEach(a=>{
+    const m = L.marker([a.lat,a.lon]).addTo(apmcMap).bindPopup(`${a.name} — ${a.city}`);
+    apmcMarkers.push(m);
+    listDiv.innerHTML += `<div style="margin-top:4px">${escapeHtml(a.name)} — ${escapeHtml(a.city)}</div>`;
+  });
+  resDiv.textContent = i18n[currentLang]['apmc.centered']||'Using Gadag as current location';
+}
+document.getElementById('locateBtn').addEventListener('click', showApmcAroundGadag);
+
+/* ============================================================
+   TOKENS (shared with profile)
+   ============================================================ */
+function readJson(key,fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    return JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function writeJson(key,val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function calculateTokensFromUsage(){
+  const usageMs = parseInt(localStorage.getItem('krishiUsageMs') || '0',10);
+  const visitDays = readJson('krishiVisitDays', []);
+  const totalMinutes = Math.floor(usageMs / 60000);
+  const tokensFromTime = totalMinutes * 2;
+  const tokensFromVisits = (visitDays?visitDays.length:0) * 10;
+  const totalTokens = tokensFromTime + tokensFromVisits;
+  const obj = { totalTokens, lastCalcAt:new Date().toISOString() };
+  writeJson('krishiTokens', obj);
+  return obj;
+}
+let krishiTokenBalance = 0;
+function loadTokens(){
+  let obj = readJson('krishiTokens', null);
+  if(!obj) obj = calculateTokensFromUsage();
+  krishiTokenBalance = obj.totalTokens || 0;
+  document.getElementById('tokenBalance').textContent = krishiTokenBalance;
+  updateTokenProgress();
+}
+function updateTokenProgress(){
+  const bar = document.getElementById('tokenBar');
+  const label = document.getElementById('progressNextLabel');
+  const badge = document.getElementById('tokenTierBadge');
+  const t = krishiTokenBalance || 0;
+  const pct = Math.min(100, (t % 100));
+  bar.style.width = pct + '%';
+  const remaining = 100 - (t % 100);
+  label.textContent = `${remaining} tokens to next 100`;
+  let tier = 'Seed Farmer 🌱';
+  if(t >= 500) tier = 'Gold Farmer 🏅';
+  else if(t >= 300) tier = 'Silver Farmer 🥈';
+  else if(t >= 150) tier = 'Bronze Farmer 🥉';
+  badge.textContent = tier;
+}
+function changeTokens(delta){
+  krishiTokenBalance = Math.max(0, krishiTokenBalance + delta);
+  const obj = { totalTokens:krishiTokenBalance, lastCalcAt:new Date().toISOString() };
+  writeJson('krishiTokens', obj);
+  document.getElementById('tokenBalance').textContent = krishiTokenBalance;
+  updateTokenProgress();
+}
+
+/* redeem button */
+document.getElementById('redeemBtn').addEventListener('click', ()=>{
+  const select = document.getElementById('redeemItem');
+  const opt = select.selectedOptions[0];
+  const cost = parseInt(opt.getAttribute('data-cost')||'0',10);
+  const label = opt.textContent;
+  const msgEl = document.getElementById('redeemMsg');
+  if(krishiTokenBalance <= 0){
+    msgEl.textContent = i18n[currentLang]['redeem.noTokens']||'No tokens available.';
+    return;
+  }
+  if(krishiTokenBalance < cost){
+    msgEl.textContent = i18n[currentLang]['redeem.notEnough']||'Not enough tokens to redeem this item.';
+    return;
+  }
+  changeTokens(-cost);
+  msgEl.textContent = (i18n[currentLang]['redeem.success']||'Redeemed successfully:') + ' ' + label;
+  setTimeout(()=>{ msgEl.textContent=''; }, 4500);
+});
+
+/* go to profile */
+document.getElementById('goProfileBtn').addEventListener('click', ()=>{
+  window.location.href = 'profile.html';
+});
+
+/* open external market (token section) modal */
+const marketRedeemModal = document.getElementById('marketRedeemModal');
+document.getElementById('openMarketRedeemBtn').addEventListener('click', ()=>{
+  marketRedeemModal.style.display='flex';
+  document.getElementById('marketRedeemIframe').src = 'https://www.amazon.in/s?k=fertilizer+seeds';
+});
+document.getElementById('closeMarketRedeemBtn').addEventListener('click', ()=>{
+  marketRedeemModal.style.display='none';
+});
+document.getElementById('marketRedeemLangSelect').addEventListener('change', (e)=>{
+  const lang = e.target.value;
+  const url = buildTranslateUrl('https://www.amazon.in/s?k=fertilizer+seeds', lang);
+  window.open(url,'_blank');
+});
+
+/* ============================================================
+   STATIC FARM PRODUCTS (DEMO) — NOW WITH REAL LINKS & RANDOM REFRESH
+   ============================================================ */
+const productsPool = [
+  {
+    title:'Hybrid Maize Seeds 5kg',
+    img:'https://images.pexels.com/photos/235925/pexels-photo-235925.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹900–₹1200 (approx)',
+    link:'https://www.amazon.in/s?k=hybrid+maize+seeds+5kg',
+    desc:'High-yield hybrid maize seeds suitable for Kharif season.'
+  },
+  {
+    title:'Urea Fertilizer 45kg Bag',
+    img:'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹650–₹800 (approx)',
+    link:'https://www.amazon.in/s?k=urea+fertilizer+45+kg',
+    desc:'Nitrogen rich fertilizer widely used for cereals and grains.'
+  },
+  {
+    title:'NPK 19:19:19 Water Soluble',
+    img:'https://images.pexels.com/photos/5411574/pexels-photo-5411574.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹550–₹750 (approx)',
+    link:'https://www.amazon.in/s?k=npk+19+19+19+fertilizer',
+    desc:'Balanced NPK fertilizer for vegetables, fruits and flowers.'
+  },
+  {
+    title:'Organic Vermicompost 10kg',
+    img:'https://images.pexels.com/photos/9092824/pexels-photo-9092824.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹350–₹500 (approx)',
+    link:'https://www.amazon.in/s?k=vermicompost+10kg',
+    desc:'Organic manure to improve soil structure and micro-organisms.'
+  },
+  {
+    title:'Paddy Seeds (High Yield Variety)',
+    img:'https://images.pexels.com/photos/1600139/pexels-photo-1600139.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹800–₹1100 (approx)',
+    link:'https://www.amazon.in/s?k=paddy+seeds+high+yield',
+    desc:'High-yielding rice seeds suitable for irrigated conditions.'
+  },
+  {
+    title:'Drip Irrigation Kit for 100 Plants',
+    img:'https://images.pexels.com/photos/7457671/pexels-photo-7457671.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹1200–₹2000 (approx)',
+    link:'https://www.amazon.in/s?k=drip+irrigation+kit+100+plants',
+    desc:'Complete drip kit to save water and improve irrigation efficiency.'
+  },
+  {
+    title:'Battery Operated Knapsack Sprayer',
+    img:'https://images.pexels.com/photos/7731330/pexels-photo-7731330.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹2500–₹4500 (approx)',
+    link:'https://www.amazon.in/s?k=battery+knapsack+sprayer',
+    desc:'Sprayer for pesticides, herbicides and foliar nutrition.'
+  },
+  {
+    title:'Vegetable Seed Kit – Home Garden',
+    img:'https://images.pexels.com/photos/952437/pexels-photo-952437.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹250–₹600 (approx)',
+    link:'https://www.amazon.in/s?k=vegetable+seed+kit',
+    desc:'Mixed pack of vegetable seeds for kitchen/home gardens.'
+  },
+  {
+    title:'Bio-Organic Neem Cake Fertilizer',
+    img:'https://images.pexels.com/photos/4207902/pexels-photo-4207902.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹300–₹700 (approx)',
+    link:'https://www.amazon.in/s?k=neem+cake+fertilizer',
+    desc:'Neem-based organic fertilizer with pest repellent properties.'
+  },
+  {
+    title:'Mulching Sheet for Vegetables',
+    img:'https://images.pexels.com/photos/1295582/pexels-photo-1295582.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹700–₹1500 (approx)',
+    link:'https://www.amazon.in/s?k=mulching+sheet+agriculture',
+    desc:'Plastic mulching sheet to control weeds and retain moisture.'
+  },
+  {
+    title:'Sprinkler Irrigation Set',
+    img:'https://images.pexels.com/photos/6157051/pexels-photo-6157051.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹1500–₹3000 (approx)',
+    link:'https://www.amazon.in/s?k=agriculture+sprinkler+set',
+    desc:'Overhead sprinkler system for small and medium fields.'
+  },
+  {
+    title:'Soil pH & Moisture Meter',
+    img:'https://images.pexels.com/photos/2886937/pexels-photo-2886937.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹400–₹900 (approx)',
+    link:'https://www.amazon.in/s?k=soil+ph+meter+for+plants',
+    desc:'Simple soil testing meter for pH and moisture level.'
+  },
+  {
+    title:'Organic Potting Mix 25kg',
+    img:'https://images.pexels.com/photos/1301856/pexels-photo-1301856.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹500–₹900 (approx)',
+    link:'https://www.amazon.in/s?k=organic+potting+mix',
+    desc:'Ready-to-use potting mix for terrace and kitchen gardens.'
+  },
+  {
+    title:'Hybrid Tomato Seeds – F1',
+    img:'https://images.pexels.com/photos/1211887/pexels-photo-1211887.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹150–₹450 (approx)',
+    link:'https://www.amazon.in/s?k=hybrid+tomato+seeds+f1',
+    desc:'High-yield hybrid tomato seeds suited for multiple seasons.'
+  },
+  {
+    title:'Kisan Hand Weeder Tool',
+    img:'https://images.pexels.com/photos/2165688/pexels-photo-2165688.jpeg?auto=compress&cs=tinysrgb&w=600',
+    price:'₹250–₹700 (approx)',
+    link:'https://www.amazon.in/s?k=hand+weeder+tool',
+    desc:'Manual weeding tool to remove weeds between crop rows.'
+  }
+];
+
+function getRandomProducts(maxCount){
+  const pool = [...productsPool];
+  // simple shuffle
+  for(let i = pool.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, maxCount);
+}
+
+function renderProducts(){
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = '';
+  const items = getRandomProducts(6);  // show 6 random items each time
+  items.forEach(p=>{
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.img}" alt="${escapeHtml(p.title)}">
+      <div class="product-title">${escapeHtml(p.title)}</div>
+      <div class="product-meta">${escapeHtml(p.desc)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:4px;">
+        <span><strong>${escapeHtml(p.price)}</strong></span>
+        <a href="${p.link}" target="_blank" rel="noopener" style="font-weight:700;color:#16a34a;">Open →</a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+document.getElementById('refreshProductsBtn').addEventListener('click', renderProducts);
+
+/* external market popup (products section) */
+const externalMarketModal = document.getElementById('externalMarketModal');
+document.getElementById('openExternalMarketModalBtn').addEventListener('click', ()=>{
+  externalMarketModal.style.display='flex';
+  document.getElementById('externalMarketIframe').src = 'https://www.indiamart.com/search.mp?ss=agriculture%20fertilizer';
+});
+document.getElementById('closeExternalMarketBtn').addEventListener('click', ()=>{
+  externalMarketModal.style.display='none';
+});
+document.getElementById('extMarketLangSelect').addEventListener('change', (e)=>{
+  const lang = e.target.value;
+  const url = buildTranslateUrl('https://www.indiamart.com/search.mp?ss=agriculture%20fertilizer', lang);
+  window.open(url,'_blank');
+});
+
+/* SELL portal (new tab) */
+document.getElementById('openSellPortalBtn').addEventListener('click', ()=>{
+  // Example: farmer.gov.in or any marketplace where farmer can post products
+  const url = 'https://farmer.gov.in';
+  const lang = currentLang;
+  const tUrl = buildTranslateUrl(url, lang);
+  window.open(tUrl,'_blank');
+});
+
+/* ============================================================
+   FEEDBACK (simple mailto)
+   ============================================================ */
+document.getElementById('submitFeedbackBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('fbName').value.trim();
+  const phone = document.getElementById('fbPhone').value.trim();
+  const email = document.getElementById('fbEmail').value.trim();
+  const msg = document.getElementById('fbMessage').value.trim();
+  const out = document.getElementById('feedbackMsg');
+  if(!name || !msg){
+    out.textContent = i18n[currentLang]['help.fill']||'Please provide name and message.';
+    return;
+  }
+  const subject = encodeURIComponent('Krishi Connect Feedback from ' + name);
+  const body = encodeURIComponent(`Name: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nMessage:\n${msg}`);
+  const mailto = `mailto:shivaganesh00004@gmail.com?subject=${subject}&body=${body}`;
+  out.textContent = i18n[currentLang]['help.sent']||'Opening mail app...';
+  setTimeout(()=>{
+    window.location.href = mailto;
+  },300);
+});
+document.getElementById('clearFeedbackBtn').addEventListener('click', ()=>{
+  document.getElementById('fbName').value='';
+  document.getElementById('fbPhone').value='';
+  document.getElementById('fbEmail').value='';
+  document.getElementById('fbMessage').value='';
+  document.getElementById('feedbackMsg').textContent='';
+});
+
+/* ============================================================
+   MARKET & NEWS & MAP & TOKENS INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadNews();
+  loadMarket();
+  initApmcMap();
+  showApmcAroundGadag();
+  loadTokens();
+  renderProducts(); // initial products load
+});
+</script>
+
+<!-- =========================
+     DIALOGFLOW CHATBOT WIDGET
+     ========================= -->
+<df-messenger
+  intent="WELCOME"
+  chat-title="FarmersChatbot"
+  agent-id="18cd52aa-009b-4144-8af4-485bbec6dd81"
+  language-code="en">
+</df-messenger>
+
+</body>
+</html>
